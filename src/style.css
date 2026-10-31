@@ -1,0 +1,1609 @@
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap");
+
+:root {
+  font-family: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #fff9e9;
+  background: #a9c8cd;
+  font-synthesis: none;
+  --ink: #193b37;
+  --paper: #fff9e9;
+  --gold: #e8bd7e;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  overflow: hidden;
+  user-select: none;
+}
+input,
+#messages {
+  user-select: text;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button,
+a,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+button {
+  cursor: pointer;
+}
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 4px;
+}
+[hidden] {
+  display: none !important;
+}
+#game,
+.vignette {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+#game {
+  display: block;
+  touch-action: none;
+}
+.vignette {
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(11, 40, 38, 0.79),
+      rgba(12, 37, 34, 0.4) 38%,
+      transparent 70%
+    ),
+    linear-gradient(0deg, #17382d80, transparent 30%);
+}
+body.playing .vignette {
+  background: linear-gradient(
+    180deg,
+    #17332d30,
+    transparent 20%,
+    transparent 80%,
+    #17332d40
+  );
+}
+.topbar {
+  position: fixed;
+  z-index: 5;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 4%;
+  pointer-events: none;
+}
+.topbar > * {
+  pointer-events: auto;
+}
+.brand {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+  color: var(--paper);
+  text-decoration: none;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 43px;
+  height: 43px;
+  border: 1px solid #e8bd7e88;
+  color: var(--gold);
+  font-size: 35px;
+  font-weight: 400;
+}
+.brand small {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 4px;
+  margin-top: 5px;
+  font-weight: 400;
+}
+.session-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #163a355c;
+  border: 1px solid #fff2;
+  border-radius: 30px;
+  padding: 11px 17px;
+  font-size: 11px;
+  backdrop-filter: blur(12px);
+}
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c8dfaa;
+}
+.divider {
+  height: 12px;
+  width: 1px;
+  background: #fff4;
+  margin: 0 4px;
+}
+.icon-button {
+  border: 1px solid #fff4;
+  background: #173c3555;
+  color: white;
+  border-radius: 50%;
+  font-size: 18px;
+  width: 39px;
+  height: 39px;
+}
+.welcome {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  padding: 90px 7%;
+}
+.welcome-copy {
+  width: min(620px, 60vw);
+}
+.eyebrow {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--gold);
+  display: block;
+}
+.eyebrow span {
+  display: inline-block;
+  width: 22px;
+  height: 1px;
+  background: var(--gold);
+  vertical-align: middle;
+  margin-right: 8px;
+}
+h1 {
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: clamp(42px, 5.5vw, 80px);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.5px;
+  margin: 27px 0 20px;
+}
+h1 em {
+  font-weight: 400;
+  color: var(--gold);
+}
+.intro {
+  font-size: 14px;
+  color: #f1f1dfba;
+  line-height: 1.9;
+  margin-bottom: 30px;
+}
+.join-card {
+  max-width: 490px;
+  border-top: 1px solid #fff3;
+  padding-top: 21px;
+}
+/* Giao diện Welcome tối giản: chỉ có tên và đúng 2 nút Tạo phòng / Vào phòng */
+.lobby-card {
+  margin: 18px 0;
+  max-width: 480px;
+}
+.lobby-card label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #eee7d2cc;
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.lobby-name-input {
+  width: 100%;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 14px 18px;
+  background: rgba(251, 247, 233, 0.12);
+  color: #fff;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  box-sizing: border-box;
+}
+.lobby-name-input:focus {
+  border-color: var(--gold);
+  background: rgba(251, 247, 233, 0.2);
+}
+.lobby-name-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+.lobby-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+.lobby-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px 14px;
+  border-radius: 8px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  text-align: center;
+}
+.lobby-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+.lobby-btn:active {
+  transform: translateY(0);
+}
+.btn-create {
+  background: linear-gradient(135deg, #e8bd7e 0%, #cf9a4a 100%);
+  color: #193b37;
+  border-color: #ffd899;
+  box-shadow: 0 4px 16px rgba(232, 189, 126, 0.35);
+}
+.btn-create .btn-icon {
+  font-size: 22px;
+}
+.btn-create .btn-title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+.btn-create .btn-subtitle {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+.btn-join {
+  background: linear-gradient(135deg, rgba(36, 83, 71, 0.9) 0%, rgba(20, 52, 44, 0.95) 100%);
+  color: #fff9e9;
+  border-color: rgba(232, 189, 126, 0.45);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+.btn-join .btn-icon {
+  font-size: 22px;
+}
+.btn-join .btn-title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #fff9e9;
+}
+.btn-join .btn-subtitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gold);
+}
+.lobby-meta {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--gold);
+}
+.join-error {
+  font-size: 12px;
+  color: #ff9b85;
+  min-height: 16px;
+  margin: 6px 0 0;
+  font-weight: 500;
+}
+/* Modal danh sách phòng */
+.rooms-modal-card {
+  max-width: 600px;
+  width: 90%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+.rooms-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.rooms-modal-header h2 {
+  margin: 4px 0;
+  font-size: 22px;
+}
+.rooms-modal-header p {
+  margin: 0;
+  font-size: 12px;
+  color: #eeddbb;
+}
+.rooms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  max-height: 380px;
+  padding: 4px;
+  margin-bottom: 16px;
+}
+.room-card-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+.room-card-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--gold);
+}
+.room-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.room-card-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff9e9;
+}
+.room-card-details {
+  display: flex;
+  gap: 14px;
+  font-size: 11px;
+  color: #e2d2b5;
+}
+.room-card-host {
+  color: var(--gold);
+}
+.room-card-count {
+  background: rgba(232, 189, 126, 0.2);
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+.rooms-empty-msg {
+  padding: 30px 20px;
+  text-align: center;
+  color: #eeddbb;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.rooms-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 14px;
+}
+.welcome-controls {
+  display: flex;
+  gap: 20px;
+  font-size: 10px;
+  color: #eee8d8aa;
+  margin-top: 14px;
+  align-items: center;
+}
+.welcome-controls span {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+kbd {
+  font: 9px Arial;
+  border: 1px solid #fff3;
+  border-radius: 3px;
+  padding: 5px;
+  color: #fff9;
+}
+.scene-caption {
+  position: absolute;
+  right: 5%;
+  bottom: 19%;
+  display: flex;
+  gap: 16px;
+  text-shadow: 0 2px 12px #102c25;
+}
+.caption-index {
+  font-size: 10px;
+  color: var(--gold);
+  padding-top: 4px;
+}
+.scene-caption small {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #f6e6c9;
+}
+.scene-caption h2 {
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  margin: 9px 0;
+}
+.scene-caption p {
+  font-size: 11px;
+  color: #f6ecdcbd;
+}
+.welcome-footer {
+  position: absolute;
+  bottom: 30px;
+  left: 4%;
+  right: 4%;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 20px;
+  border-top: 1px solid #fff3;
+  font-size: 8px;
+  letter-spacing: 1.3px;
+  color: #e6ead2c0;
+}
+.welcome-footer i {
+  margin: 0 13px;
+}
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+#hud button,
+#hud a,
+#hud input,
+#hotbar {
+  pointer-events: auto;
+}
+.location-card {
+  position: absolute;
+  top: 105px;
+  left: 4%;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  filter: drop-shadow(0 1px 5px #1b3e2c);
+}
+.location-card strong {
+  font-family: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.location-card #coordinates {
+  font-size: 10px;
+  color: #fffd;
+}
+#crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  filter: drop-shadow(0 1px 1px #0008);
+}
+#crosshair i,
+#crosshair b {
+  position: absolute;
+  background: #fff9;
+}
+#crosshair i {
+  left: 9px;
+  top: 3px;
+  width: 2px;
+  height: 14px;
+}
+#crosshair b {
+  left: 3px;
+  top: 9px;
+  height: 2px;
+  width: 14px;
+}
+.landmark-card {
+  position: absolute;
+  left: 4%;
+  top: 190px;
+  max-width: 310px;
+  padding: 19px;
+  background: #17392fd9;
+  border: 1px solid #e2cf9e55;
+  border-radius: 3px;
+  backdrop-filter: blur(12px);
+}
+.landmark-card h2 {
+  font-family: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 21px;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin: 10px 0;
+}
+.landmark-card p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #e6e7d9;
+}
+.landmark-card a {
+  font-size: 10px;
+  color: var(--gold);
+  text-underline-offset: 3px;
+}
+.chat-panel {
+  position: absolute;
+  bottom: 32px;
+  left: 4%;
+  width: 265px;
+  background: linear-gradient(0deg, #17392fa8, transparent);
+  padding: 12px;
+  border-radius: 4px;
+}
+.chat-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 8px;
+  letter-spacing: 1.7px;
+  color: #efefd6a0;
+}
+.chat-heading button {
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 19px;
+}
+#messages {
+  list-style: none;
+  padding: 0;
+  margin: 7px 0;
+  font-size: 11px;
+  line-height: 1.6;
+  max-height: 145px;
+  overflow: auto;
+  overflow-wrap: anywhere;
+  pointer-events: auto;
+}
+#messages b {
+  color: var(--gold);
+  font-weight: 500;
+}
+#chat-hint {
+  font-size: 9px;
+  color: #d4dfc899;
+}
+#chat-form {
+  display: flex;
+  gap: 5px;
+}
+#chat-input {
+  width: 100%;
+  min-width: 0;
+  background: #fff1;
+  border: 1px solid #fff4;
+  border-radius: 3px;
+  padding: 8px;
+  color: #fff;
+  outline: none;
+}
+#chat-form button {
+  border: 0;
+  background: var(--gold);
+  color: var(--ink);
+  border-radius: 3px;
+  font-size: 11px;
+}
+.hotbar-wrap {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  text-align: center;
+}
+#selected-label {
+  font-size: 11px;
+  margin-bottom: 9px;
+  text-shadow: 0 1px 4px #0008;
+}
+.hotbar {
+  display: flex;
+  gap: 5px;
+  padding: 7px;
+  background: #17392fc9;
+  border: 1px solid #e6cf9d55;
+  border-radius: 7px;
+  backdrop-filter: blur(10px);
+}
+.hotbar button {
+  position: relative;
+  width: 43px;
+  height: 47px;
+  border: 1px solid #fff2;
+  border-radius: 3px;
+  background: #ffffff08;
+  color: #eee9d7;
+}
+.hotbar button.active {
+  border: 1px solid var(--gold);
+  background: #efd09c20;
+  transform: translateY(-3px);
+}
+.hotbar button small {
+  position: absolute;
+  left: 4px;
+  top: 3px;
+  font-size: 8px;
+}
+.block-swatch {
+  display: block;
+  margin: auto;
+  width: 23px;
+  height: 25px;
+  clip-path: polygon(50% 0, 100% 23%, 100% 76%, 50% 100%, 0 76%, 0 23%);
+  box-shadow:
+    inset 6px -8px 0 #0002,
+    inset -8px 8px 0 #ffffff20;
+}
+.desktop-hint {
+  font-size: 8px;
+  white-space: nowrap;
+  color: #fff9;
+}
+.desktop-hint b {
+  font-weight: 400;
+  color: #fffd;
+}
+.desktop-hint span {
+  margin: 0 7px;
+}
+.minimap {
+  position: absolute;
+  right: 4%;
+  bottom: 30px;
+  width: 146px;
+  height: 146px;
+  border: 1px solid #dfd2ae66;
+  background: #183d32df;
+  border-radius: 50%;
+  padding: 6px;
+}
+.minimap canvas {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  opacity: 0.9;
+}
+.minimap > span {
+  position: absolute;
+  top: -17px;
+  left: 50%;
+  font-size: 9px;
+  color: var(--gold);
+}
+#fps {
+  position: absolute;
+  bottom: -16px;
+  right: 0;
+  white-space: nowrap;
+  color: #fff9;
+  font-size: 8px;
+}
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: #102b27a8;
+  backdrop-filter: blur(7px);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+.menu-card {
+  background: #183d35;
+  border: 1px solid #dac79555;
+  border-radius: 8px;
+  padding: 30px;
+  width: min(430px, 100%);
+  box-shadow: 0 20px 80px #0003;
+}
+.menu-card h2 {
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -0.3px;
+  margin: 16px 0;
+}
+.menu-card p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #dddacb;
+}
+.menu-card label {
+  display: block;
+  font-size: 12px;
+  margin: 20px 0;
+}
+.menu-card select {
+  display: block;
+  width: 100%;
+  margin-top: 9px;
+  padding: 10px;
+  background: #245045;
+  border: 1px solid #fff3;
+  color: white;
+  border-radius: 4px;
+}
+.menu-card button {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+}
+.secondary {
+  background: transparent;
+  border: 1px solid #fff3;
+  border-radius: 4px;
+  padding: 12px;
+  color: #f4ebd6;
+  font-size: 12px;
+}
+.menu-card small {
+  display: block;
+  font-size: 10px;
+  line-height: 1.7;
+  color: #eee7cd88;
+  margin-top: 20px;
+}
+.sound-label {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+}
+#toast {
+  position: fixed;
+  z-index: 20;
+  bottom: 155px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #173c36eb;
+  border: 1px solid #efd09777;
+  color: #fff3d6;
+  border-radius: 5px;
+  padding: 13px 20px;
+  font-size: 12px;
+  max-width: 90vw;
+  text-align: center;
+}
+#resume-hint {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid #fff6;
+  background: #183c31cc;
+  padding: 17px 22px;
+  color: white;
+  border-radius: 4px;
+}
+#touch-controls {
+  display: none;
+}
+@media (max-width: 1000px) {
+  .chat-panel {
+    bottom: 150px;
+    width: 230px;
+  }
+  .minimap {
+    width: 110px;
+    height: 110px;
+  }
+  .welcome {
+    padding-left: 6%;
+  }
+  .welcome-copy {
+    width: 60vw;
+  }
+  .scene-caption {
+    right: 4%;
+    bottom: 15%;
+  }
+  .join-meta span:last-child {
+    display: none;
+  }
+}
+@media (pointer: coarse), (max-width: 700px) {
+  #touch-controls {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  #joystick {
+    position: absolute;
+    left: 28px;
+    bottom: 55px;
+    width: 112px;
+    height: 112px;
+    border: 1px solid #fff4;
+    background: #17392f44;
+    border-radius: 50%;
+    pointer-events: auto;
+    touch-action: none;
+  }
+  #stick {
+    position: absolute;
+    left: 33px;
+    top: 33px;
+    width: 44px;
+    height: 44px;
+    background: #fff5;
+    border: 1px solid #fff6;
+    border-radius: 50%;
+  }
+  .touch-actions {
+    position: absolute;
+    right: 22px;
+    bottom: 55px;
+    display: flex;
+    gap: 10px;
+    align-items: end;
+  }
+  .touch-actions button {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 1px solid #fff7;
+    background: #163e3277;
+    color: white;
+    touch-action: none;
+    font-size: 12px;
+  }
+  .touch-actions button:last-child {
+    width: 61px;
+    height: 61px;
+    font-size: 28px;
+    margin-bottom: 42px;
+  }
+  #touch-controls > small {
+    position: absolute;
+    right: 24px;
+    top: 48%;
+    color: #fff6;
+    font-size: 9px;
+  }
+  .desktop-hint,
+  .welcome-controls {
+    display: none;
+  }
+  .hotbar-wrap {
+    bottom: 13px;
+  }
+  .hotbar button {
+    width: 33px;
+    height: 36px;
+  }
+  .hotbar {
+    gap: 3px;
+    padding: 4px;
+  }
+  .block-swatch {
+    width: 19px;
+    height: 21px;
+  }
+  #selected-label {
+    font-size: 10px;
+    margin-bottom: 5px;
+  }
+  .minimap {
+    bottom: 170px;
+    width: 92px;
+    height: 92px;
+  }
+  .chat-panel {
+    bottom: 182px;
+    width: 200px;
+  }
+  .chat-panel ol {
+    max-height: 70px;
+    font-size: 10px;
+  }
+  .chat-panel #chat-hint {
+    display: none;
+  }
+  .landmark-card {
+    max-width: 270px;
+    top: 160px;
+    padding: 12px;
+  }
+  .landmark-card h2 {
+    font-size: 17px;
+  }
+  .landmark-card p {
+    font-size: 11px;
+    margin: 6px 0;
+  }
+  .location-card {
+    top: 87px;
+  }
+  .location-card strong {
+    font-size: 16px;
+  }
+  .topbar {
+    padding-top: max(18px, env(safe-area-inset-top));
+  }
+  #toast {
+    bottom: 200px;
+  }
+}
+@media (max-width: 650px) {
+  .session-info {
+    font-size: 9px;
+    padding: 8px 10px;
+    gap: 5px;
+  }
+  .brand {
+    font-size: 15px;
+    gap: 8px;
+    letter-spacing: 2px;
+  }
+  .brand small {
+    font-size: 7px;
+    letter-spacing: 3px;
+  }
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+    font-size: 27px;
+  }
+  .icon-button {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+  }
+  .welcome {
+    padding: 90px 7% 130px;
+    align-items: center;
+  }
+  .welcome-copy {
+    width: 100%;
+  }
+  h1 {
+    font-size: 54px;
+    margin: 18px 0;
+  }
+  .intro {
+    font-size: 12px;
+    margin: 17px 0 22px;
+  }
+  .eyebrow {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+  }
+  .join-row input {
+    width: 140px;
+    padding: 13px 12px;
+    font-size: 13px;
+  }
+  .join-row button {
+    font-size: 12px;
+    padding: 12px;
+  }
+  .join-row button span {
+    padding-left: 6px;
+  }
+  .join-meta {
+    font-size: 8px;
+  }
+  .scene-caption {
+    bottom: 60px;
+    left: 7%;
+    right: auto;
+    gap: 12px;
+  }
+  .scene-caption h2 {
+    font-size: 18px;
+    margin: 5px 0;
+  }
+  .scene-caption small {
+    font-size: 8px;
+  }
+  .scene-caption p {
+    font-size: 9px;
+    margin: 5px 0;
+  }
+  .welcome-footer {
+    font-size: 6px;
+    bottom: 15px;
+    padding-top: 11px;
+  }
+  .welcome-footer > span:last-child {
+    display: none;
+  }
+  .vignette {
+    background:
+      linear-gradient(90deg, #0e3029d4, #11362b66),
+      linear-gradient(0deg, #17382d70, transparent);
+  }
+  .chat-panel {
+    left: 4%;
+    width: 190px;
+  }
+  .landmark-card {
+    max-width: 240px;
+  }
+  .minimap {
+    right: 4%;
+  }
+  .location-card .eyebrow {
+    font-size: 7px;
+  }
+}
+@media (max-height: 540px) {
+  .welcome {
+    padding: 75px 6% 40px;
+  }
+  .welcome-copy {
+    width: 60vw;
+  }
+  h1 {
+    font-size: 44px;
+    margin: 12px 0;
+  }
+  .intro {
+    font-size: 11px;
+    line-height: 1.6;
+    margin: 10px 0;
+  }
+  .join-card {
+    padding-top: 10px;
+  }
+  .welcome-footer,
+  .welcome-controls,
+  .join-meta,
+  .scene-caption {
+    display: none;
+  }
+  .join-row input {
+    padding: 10px;
+  }
+  .join-row button {
+    padding: 10px;
+  }
+  .topbar {
+    padding-top: 14px;
+  }
+  .location-card {
+    top: 70px;
+  }
+  .landmark-card {
+    top: 130px;
+    width: 240px;
+  }
+  .chat-panel {
+    left: auto;
+    right: 15px;
+    top: 70px;
+    bottom: auto;
+  }
+  .minimap {
+    display: none;
+  }
+  #joystick {
+    bottom: 20px;
+  }
+  .touch-actions {
+    bottom: 20px;
+  }
+  .menu-card {
+    max-height: 95vh;
+    overflow: auto;
+    padding: 20px;
+  }
+}
+
+.tour-label {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: #e8bd7e;
+  margin: 18px 0 8px;
+}
+.tour-buttons {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.tour-buttons button {
+  flex: 1;
+  min-width: 100px;
+  font-size: 10px;
+  padding: 9px 5px;
+  margin-top: 0;
+}
+.menu-card {
+  max-height: 92dvh;
+  overflow-y: auto;
+}
+body {
+  overscroll-behavior: none;
+}
+@media (max-width: 650px) {
+  .join-row input {
+    font-size: 16px;
+  }
+}
+#game {
+  outline: none;
+}
+#resume-hint {
+  top: auto;
+  bottom: 135px;
+  padding: 9px 14px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+@media (max-height: 540px) {
+  .landmark-card {
+    max-height: 145px;
+    overflow: auto;
+    pointer-events: auto;
+  }
+}
+
+/* Chế độ tham quan: không có kho đồ hay công cụ chỉnh sửa khối. */
+.welcome-copy {
+  width: min(620px, 58vw);
+}
+h1 {
+  font-size: clamp(44px, 4.8vw, 70px);
+  margin: 17px 0 14px;
+}
+.intro {
+  font-size: 12.5px;
+  line-height: 1.75;
+  margin-bottom: 12px;
+}
+.join-card {
+  padding-top: 13px;
+}
+.welcome-controls {
+  margin-top: 9px;
+}
+.character-previews {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0 14px;
+}
+.character-preview {
+  width: 200px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #fff2;
+  border-radius: 5px;
+  background: #183d3429;
+  padding: 0 7px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.character-preview:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.character-preview.active {
+  border: 2px solid var(--gold);
+  background: rgba(36, 83, 71, 0.75);
+  box-shadow: 0 0 14px rgba(232, 189, 126, 0.3);
+}
+.character-preview img {
+  width: 73px;
+  height: 86px;
+  object-fit: contain;
+}
+.character-preview div {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.character-preview strong {
+  font-size: 11px;
+  font-weight: 500;
+  color: #f1e9d2;
+}
+.character-preview span {
+  font-size: 9px;
+  color: #e3dfc8aa;
+}
+.role-badge {
+  font-size: 8px;
+  letter-spacing: 1.1px;
+  color: #f6d590;
+  margin-top: 3px;
+}
+.landmark-card {
+  top: 211px;
+  max-width: 300px;
+  padding: 16px;
+}
+.landmark-card h2 {
+  font-size: 20px;
+  margin: 9px 0;
+}
+.landmark-card p {
+  font-size: 11px;
+  line-height: 1.65;
+}
+.landmark-card small {
+  font-size: 9px;
+  line-height: 1.5;
+  color: #d8c496;
+}
+.tour-controls {
+  position: absolute;
+  bottom: 31px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 19px;
+  padding: 14px 21px;
+  border: 1px solid #e7d0a533;
+  border-radius: 30px;
+  background: #163d32b8;
+  color: #d3d4be;
+  font-size: 9px;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+}
+.tour-controls b {
+  font-weight: 400;
+  color: #fff2d6;
+  margin-left: 4px;
+}
+.mouse-hint {
+  position: absolute;
+  bottom: 92px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  background: #183e3299;
+  border-radius: 20px;
+  font-size: 10px;
+  color: #ecedd7aa;
+  white-space: nowrap;
+}
+.menu-card {
+  width: min(650px, 96vw);
+  position: relative;
+  padding: 27px;
+}
+.menu-card h2 {
+  font-size: 27px;
+}
+.menu-card > p {
+  font-size: 11px;
+}
+.menu-card .leave-button {
+  position: absolute;
+  top: 21px;
+  right: 25px;
+  width: auto;
+  padding: 8px 12px;
+  color: #edc9b2;
+  font-size: 10px;
+}
+.menu-card #overview-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 205px;
+  object-fit: contain;
+  background: #244b3c;
+  border: 1px solid #e1cba12b;
+  border-radius: 5px;
+}
+.room-select-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+.menu-card > label[for="room-select"] {
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  color: #d9c595;
+  margin: 18px 0 9px;
+}
+.room-select-row select {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 11px;
+}
+.room-select-row button {
+  width: auto;
+  white-space: nowrap;
+  margin: 0;
+  font-size: 11px;
+}
+.settings-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.settings-row label {
+  font-size: 11px;
+}
+.settings-row input[type="range"] {
+  display: block;
+  width: 100%;
+  margin-top: 18px;
+  accent-color: #e8bd7e;
+}
+.source-panel {
+  padding: 14px;
+  border: 1px solid #d4bb8755;
+  background: #15372d;
+  border-radius: 5px;
+  margin: 13px 0;
+}
+.source-panel strong {
+  font-size: 12px;
+  color: #f0e3c4;
+}
+.source-panel p {
+  font-size: 11px;
+  line-height: 1.65;
+  margin: 7px 0;
+}
+.source-panel a {
+  font-size: 11px;
+  color: #e8bd7e;
+  text-underline-offset: 3px;
+}
+.menu-card small {
+  font-size: 9px;
+  margin-top: 14px;
+}
+.menu-card .primary {
+  margin-bottom: 7px;
+}
+#touch-controls .touch-actions button:last-child {
+  margin-bottom: 0;
+}
+.location-card #coordinates {
+  font-size: 9px;
+}
+.minimap {
+  bottom: 31px;
+}
+@media (max-width: 1000px) {
+  .chat-panel {
+    bottom: 125px;
+  }
+  .tour-controls {
+    gap: 10px;
+    padding: 12px 14px;
+    font-size: 8px;
+  }
+  .welcome-copy {
+    width: 64vw;
+  }
+  .character-preview {
+    width: 185px;
+  }
+}
+@media (pointer: coarse), (max-width: 700px) {
+  .tour-controls,
+  .mouse-hint {
+    display: none;
+  }
+  .chat-panel {
+    bottom: 190px;
+    max-width: 195px;
+  }
+  .touch-actions {
+    right: 27px;
+    bottom: 45px;
+  }
+  .landmark-card {
+    top: 173px;
+    max-width: 247px;
+    padding: 12px;
+  }
+  .landmark-card h2 {
+    font-size: 17px;
+  }
+  .landmark-card p {
+    font-size: 10px;
+  }
+  .landmark-card small {
+    font-size: 8px;
+  }
+  .minimap {
+    bottom: 170px;
+  }
+  .role-badge {
+    font-size: 7px;
+  }
+  .location-card {
+    top: 83px;
+  }
+  .location-card strong {
+    font-size: 15px;
+  }
+  #joystick {
+    bottom: 42px;
+  }
+}
+@media (max-width: 650px) {
+  .welcome-copy {
+    width: 100%;
+  }
+  .welcome {
+    padding-top: 95px;
+    padding-bottom: 105px;
+  }
+  h1 {
+    font-size: 43px;
+    line-height: 1.12;
+    margin: 17px 0 14px;
+  }
+  .intro {
+    font-size: 11px;
+    line-height: 1.75;
+  }
+  .character-previews {
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .character-preview {
+    width: 50%;
+    padding: 0 3px;
+  }
+  .character-preview img {
+    width: 57px;
+    height: 75px;
+  }
+  .character-preview strong {
+    font-size: 9px;
+  }
+  .character-preview span {
+    font-size: 8px;
+  }
+  .join-card {
+    padding-top: 12px;
+  }
+  .join-meta {
+    font-size: 8px;
+    line-height: 1.5;
+  }
+  .scene-caption {
+    bottom: 53px;
+  }
+  .scene-caption h2 {
+    font-size: 16px;
+  }
+  .menu-card {
+    padding: 19px;
+  }
+  .menu-card h2 {
+    font-size: 22px;
+    margin-right: 125px;
+    line-height: 1.3;
+  }
+  .menu-card .leave-button {
+    right: 18px;
+    top: 22px;
+    font-size: 9px;
+    padding: 8px;
+  }
+  .settings-row {
+    gap: 10px;
+  }
+  .settings-row select {
+    font-size: 10px;
+  }
+  .tour-buttons button {
+    min-width: 90px;
+    font-size: 9px;
+  }
+  .menu-card .tour-label {
+    font-size: 8px;
+    line-height: 1.7;
+  }
+  .room-select-row {
+    gap: 5px;
+  }
+  .room-select-row select {
+    font-size: 10px;
+  }
+  .room-select-row button {
+    font-size: 10px;
+    padding: 8px;
+  }
+  .session-info {
+    max-width: 46vw;
+    font-size: 8px;
+  }
+  .brand small {
+    font-size: 6px;
+    letter-spacing: 1.5px;
+  }
+  .brand {
+    font-size: 14px;
+    letter-spacing: 1.5px;
+  }
+}
+@media (max-height: 600px) {
+  .welcome {
+    padding: 70px 5% 25px;
+  }
+  .welcome-copy {
+    width: 62vw;
+  }
+  .character-previews {
+    position: absolute;
+    right: 3%;
+    bottom: 55px;
+    flex-direction: column;
+  }
+  .character-preview {
+    width: 160px;
+  }
+  h1 {
+    font-size: 39px;
+    margin: 10px 0;
+  }
+  .intro {
+    font-size: 11px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .character-preview img {
+    height: 69px;
+    width: 60px;
+  }
+  .join-card {
+    max-width: 440px;
+  }
+  .welcome-controls {
+    display: none;
+  }
+  .location-card {
+    top: 70px;
+  }
+  .landmark-card {
+    top: 145px;
+    max-height: 135px;
+    overflow: auto;
+    pointer-events: auto;
+    max-width: 235px;
+  }
+  .chat-panel {
+    left: auto;
+    right: 14px;
+    top: 70px;
+    bottom: auto;
+    width: 210px;
+  }
+  .chat-panel #messages {
+    max-height: 60px;
+  }
+  .tour-controls {
+    bottom: 17px;
+  }
+  .role-badge {
+    font-size: 7px;
+  }
+}

@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: dau-viet-mien-khoi
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 24.14.1
+# Gói Free không có ổ đĩa bền vững. Xem README trước khi lưu dữ liệu quan trọng.

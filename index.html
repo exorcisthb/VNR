@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#193c35" />
+    <meta
+      name="description"
+      content="Dấu Việt: cùng đoàn sinh viên FPT tham quan năm điểm đến và các không gian nội thất trong một bản đồ 3D."
+    />
+    <title>Dấu Việt — Hành trình di sản</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <canvas
+      id="game"
+      tabindex="0"
+      aria-label="Không gian tham quan 3D Dấu Việt"
+    ></canvas>
+    <div class="vignette"></div>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Dấu Việt"
+        ><span class="brand-mark">▧</span
+        ><span>DẤU VIỆT<small>HÀNH TRÌNH DI SẢN</small></span></a
+      >
+      <div class="session-info">
+        <span class="live-dot"></span
+        ><span id="connection">Đang chuẩn bị không gian</span
+        ><span class="divider"></span><span id="online">0 người</span>
+      </div>
+      <button id="menu-button" class="icon-button" aria-label="Mở menu">
+        ☰
+      </button>
+    </header>
+    <main id="welcome" class="welcome">
+      <section class="welcome-copy">
+        <div class="eyebrow"><span></span> MỘT BẢN ĐỒ · NĂM ĐIỂM ĐẾN VIỆT NAM</div>
+        <h1>Cùng nhau đi.<br />Chạm vào <em>di sản.</em></h1>
+        <p class="intro">
+          Theo bước đoàn sinh viên FPT, khám phá kiến trúc<br />và những câu
+          chuyện phía sau từng cánh cửa.<br />Đi bộ, nhìn quanh và ghé vào các
+          không gian bên trong.
+        </p>
+        <!-- Chỉ có đúng 2 nút: Tạo phòng và Vào phòng -->
+        <div class="lobby-card">
+          <label for="player-name">TÊN CỦA BẠN</label>
+          <input
+            id="player-name"
+            class="lobby-name-input"
+            maxlength="20"
+            autocomplete="nickname"
+            placeholder="Nhập họ tên của bạn..."
+            required
+          />
+          <div class="lobby-buttons">
+            <button type="button" id="btn-create" class="lobby-btn btn-create">
+              <span class="btn-icon">🚩</span>
+              <span class="btn-title">Tạo phòng</span>
+              <small class="btn-subtitle">Host cầm cờ</small>
+            </button>
+            <button type="button" id="btn-join" class="lobby-btn btn-join">
+              <span class="btn-icon">🎓</span>
+              <span class="btn-title">Vào phòng</span>
+              <small class="btn-subtitle">Sinh viên FPT</small>
+            </button>
+          </div>
+          <div class="lobby-meta">
+            <span id="room-capacity-badge" class="room-capacity">Sĩ số: 0/50 người</span>
+          </div>
+          <p id="join-error" class="join-error" role="status"></p>
+        </div>
+        <div class="welcome-controls">
+          <span><kbd>W A S D</kbd> Di chuyển</span
+          ><span><kbd>Chuột</kbd> Nhìn quanh</span
+          ><span><kbd>Esc</kbd> Thả chuột / rời</span>
+        </div>
+      </section>
+      <aside class="scene-caption">
+        <span class="caption-index">01 / 05</span>
+        <div>
+          <small>MỘT HÀNH TRÌNH CHUNG</small>
+          <h2>Quảng trường Ba Đình</h2>
+          <p>Hà Nội · Không gian kiến trúc mô phỏng</p>
+        </div>
+      </aside>
+      <footer class="welcome-footer">
+        <span>LĂNG CHỦ TỊCH HỒ CHÍ MINH · DINH ĐỘC LẬP · TRỤ SỞ CHÍNH PHỦ · CHÙA MỘT CỘT · TRỐNG ĐỒNG</span
+        ><span>Khám phá cùng nhau, ngay trên trình duyệt</span>
+      </footer>
+    </main>
+    <div id="hud" hidden>
+      <section class="location-card">
+        <span class="eyebrow">BẠN ĐANG Ở</span><strong id="location"></strong
+        ><span id="coordinates"></span
+        ><span id="role-badge" class="role-badge"></span>
+      </section>
+      <section id="landmark-card" class="landmark-card" hidden>
+        <span class="eyebrow" id="room-type">DẤU ẤN KIẾN TRÚC</span>
+        <h2 id="landmark-title"></h2>
+        <p id="landmark-description"></p>
+        <small>Nhấn E để xem tư liệu · Mô phỏng phục vụ học tập</small>
+      </section>
+      <section class="chat-panel">
+        <div class="chat-heading">
+          <span>TRÒ CHUYỆN CÙNG ĐOÀN</span
+          ><button id="chat-button" aria-label="Nhập tin nhắn">↵</button>
+        </div>
+        <ol id="messages" aria-live="polite"></ol>
+        <form id="chat-form" hidden>
+          <input
+            id="chat-input"
+            maxlength="160"
+            autocomplete="off"
+            placeholder="Nhắn với đoàn…"
+            aria-label="Tin nhắn"
+          /><button>Gửi</button>
+        </form>
+        <small id="chat-hint">Enter để trò chuyện</small>
+      </section>
+      <div class="tour-controls">
+        <span>WASD <b>Đi bộ</b></span
+        ><span>Chuột <b>Nhìn quanh</b></span
+        ><span>Space <b>Nhảy</b></span
+        ><span>Esc <b>Menu / rời</b></span>
+      </div>
+      <aside class="minimap">
+        <canvas
+          id="map"
+          width="180"
+          height="180"
+          aria-label="Bản đồ chung của năm điểm đến"
+        ></canvas
+        ><span>N</span><small id="fps"></small>
+      </aside>
+      <div id="touch-controls">
+        <div id="joystick" aria-label="Joystick di chuyển">
+          <div id="stick"></div>
+        </div>
+        <div class="touch-actions">
+          <button id="touch-jump" aria-label="Nhảy">↑</button>
+        </div>
+        <small>Vuốt khung cảnh để nhìn</small>
+      </div>
+      <div id="mouse-hint" class="mouse-hint" hidden>
+        Chuột điều khiển góc nhìn · Esc để thả chuột
+      </div>
+    </div>
+    <section id="rooms-modal" class="modal-backdrop" hidden>
+      <div class="menu-card rooms-modal-card">
+        <div class="rooms-modal-header">
+          <div>
+            <span class="eyebrow">KHÔNG GIAN THAM QUAN · TỐI ĐA 50 NGƯỜI</span>
+            <h2>Danh sách phòng đang mở</h2>
+            <p>Chọn phòng do người khác tạo để tham quan cùng đoàn (bạn sẽ là sinh viên FPT).</p>
+          </div>
+          <button type="button" id="btn-rooms-close" class="icon-button" aria-label="Đóng danh sách phòng">✕</button>
+        </div>
+        <div id="rooms-list" class="rooms-list">
+          <!-- Danh sách phòng được tải tự động -->
+        </div>
+        <div class="rooms-modal-actions">
+          <button type="button" id="btn-rooms-refresh" class="secondary">Làm mới danh sách ⟳</button>
+          <button type="button" id="btn-rooms-cancel" class="secondary">Quay lại</button>
+        </div>
+      </div>
+    </section>
+    <section id="pause" class="modal-backdrop" hidden>
+      <div class="menu-card">
+        <span class="eyebrow">DẤU VIỆT · HÀNH TRÌNH DI SẢN</span>
+        <h2>Chuyến đi của bạn.</h2>
+        <p>
+          WASD đi · Chuột nhìn · Space nhảy · Shift đi nhanh<br />Esc luôn thả
+          chuột và mở menu này.
+        </p>
+        <canvas
+          id="overview-map"
+          width="640"
+          height="400"
+          aria-label="Toàn bản đồ tham quan"
+        ></canvas>
+        <div class="tour-label">
+          GHÉ THĂM NHANH · CŨNG CÓ THỂ ĐI BỘ GIỮA CÁC NƠI
+        </div>
+        <div id="tour-buttons" class="tour-buttons"></div>
+        <label for="room-select">KHÔNG GIAN NỘI THẤT</label>
+        <div class="room-select-row">
+          <select id="room-select" aria-label="Chọn phòng tham quan"></select
+          ><button id="visit-room" class="secondary">Vào phòng ↗</button>
+        </div>
+        <div class="settings-row">
+          <label
+            >Hiển thị<select id="quality">
+              <option value="low">Nhẹ · 80 m</option>
+              <option value="medium" selected>Cân bằng · 112 m</option>
+              <option value="high">Chi tiết · 150 m</option>
+            </select></label
+          ><label
+            >Khoảng cách camera<input
+              id="camera-distance"
+              type="range"
+              min="2"
+              max="6"
+              step=".2"
+              value="3.8"
+          /></label>
+        </div>
+        <label class="sound-label"
+          ><input id="sound" type="checkbox" checked /> Âm thanh bước
+          chân</label
+        >
+        <div class="source-panel">
+          <strong id="source-title">Tư liệu và mức độ mô phỏng</strong>
+          <p id="source-description"></p>
+          <a id="source-link" target="_blank" rel="noopener noreferrer"
+            >Đọc tư liệu gốc ↗</a
+          >
+        </div>
+        <button id="resume" class="primary">Tiếp tục tham quan ↗</button
+        ><button id="leave" class="secondary leave-button">
+          Rời buổi tham quan</button
+        ><small
+          >Các địa điểm được nối trong một công viên hư cấu. Phòng và đồ nội
+          thất được rút gọn theo tư liệu công khai; không phải bản vẽ đo đạc hay
+          sơ đồ của công trình thật.</small
+        >
+      </div>
+    </section>
+    <div id="toast" role="status" hidden></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
