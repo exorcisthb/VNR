@@ -1,8 +1,8 @@
 // Exterior proportions follow the user's reference photos; interior routes use game units.
 export function mausoleumExterior(b, floor) {
-  // Bệ móng đá hoa cương vững chắc ở chân công trình (độ sâu 38m khớp hoàn hảo bậc thềm vào Lăng)
-  b.add(0, 3, 0, 46, 1.2, 38, 'mausStone');
-  b.steps(0, 19, 10, 1.2, 6, 0.65);
+  // Bệ móng đá hoa cương vững chắc ở chân công trình và bậc thềm trải rộng toàn bộ mặt tiền Lăng (38m)
+  b.add(0, 3, 0, 38, 1.2, 38, 'mausStone');
+  b.steps(0, 19, 38, 1.2, 6, 0.65);
 
   // Khối đế tam cấp đá hoa cương 4 mặt đối xứng hoàn hảo, tựa vững chắc vào tường lõi (khoảng cách 12.4m)
   const plinthTiers = [
