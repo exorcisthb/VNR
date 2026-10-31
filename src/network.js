@@ -17,12 +17,13 @@ export class Network {
     clearTimeout(this.retry);
     const generation = ++this.generation;
     return new Promise((resolve, reject) => {
-      const ws = new WebSocket(
+      const defaultWs =
         (location.protocol === "https:" ? "wss:" : "ws:") +
-          "//" +
-          location.host +
-          "/ws",
-      );
+        "//" +
+        location.host +
+        "/ws";
+      const wsUrl = import.meta.env?.VITE_WS_URL || defaultWs;
+      const ws = new WebSocket(wsUrl);
       this.socket = ws;
       let settled = false,
         welcomed = false;
