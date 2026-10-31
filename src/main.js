@@ -2,7 +2,7 @@ import * as THREE from "three";
 import "./style.css";
 import { VoxelWorld, SPAWN } from "../shared/world.mjs";
 import { stepPlayer, cameraDistance } from "../shared/physics.mjs";
-import { LANDMARKS } from "../shared/landmarks.mjs";
+import { LANDMARKS, visitSpawn } from "../shared/landmarks.mjs";
 import {
   BUILDINGS,
   ROOMS,
@@ -66,6 +66,7 @@ let world = new VoxelWorld(),
   wantsLook = false,
   starting = false,
   cameraSnap = true,
+  isSolo = false,
   visualY = SPAWN.y,
   selfId = null,
   peerList = [],
@@ -94,6 +95,11 @@ const avatars = new Avatars(scene),
   desired = new THREE.Vector3(),
   offset = new THREE.Vector3();
 const network = new Network(onMessage, (ready) => {
+  if (isSolo) {
+    $("connection").textContent = "Tham quan di sản";
+    $("online").textContent = "1 người";
+    return;
+  }
   $("connection").textContent = ready
     ? "Đoàn đang tham quan"
     : "Mất kết nối · đang thử lại";
@@ -171,11 +177,17 @@ function clearInput() {
 }
 
 let lobbyData = { players: 0, maxPlayers: 50, hostName: null };
+let healthFailures = 0;
 
 function refreshLobby() {
+  if (healthFailures > 2) return;
   fetch("/health")
-    .then((r) => r.json())
+    .then((r) => {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
     .then((data) => {
+      healthFailures = 0;
       lobbyData = data;
       if (playing) return;
       $("connection").textContent = "Không gian đang mở";
@@ -195,7 +207,17 @@ function refreshLobby() {
         }
       }
     })
-    .catch(() => ($("connection").textContent = "Chưa kết nối được máy chủ"));
+    .catch(() => {
+      healthFailures++;
+      if (playing) return;
+      $("connection").textContent = "Không gian di sản 3D";
+      $("online").textContent = "Sẵn sàng";
+      if ($("room-capacity-badge")) {
+        $("room-capacity-badge").textContent = "Tham quan không giới hạn";
+      }
+      if ($("btn-create")) $("btn-create").disabled = false;
+      if ($("btn-join")) $("btn-join").disabled = false;
+    });
 }
 refreshLobby();
 setInterval(refreshLobby, 5000);
@@ -217,6 +239,52 @@ function capture() {
   }
 }
 
+function enterSoloMode(name, action = "create") {
+  isSolo = true;
+  network.disconnect();
+  selfId = "solo-" + Math.floor(Math.random() * 10000);
+  world = new VoxelWorld();
+  for (const g of chunks.meshes.values()) {
+    scene.remove(g);
+    g.children.forEach((mesh) => mesh.geometry.dispose());
+  }
+  chunks.meshes.clear();
+  chunks.queue.clear();
+  chunks.cx = undefined;
+  chunks.world = world;
+  p = { ...SPAWN, vy: 0, pitch: -0.16, grounded: false };
+  cameraSnap = true;
+  const role = action === "create" ? "host" : "student";
+  peerList = [{ id: selfId, name, role, x: p.x, y: p.y, z: p.z, yaw: p.yaw }];
+  avatars.sync(peerList, selfId);
+  $("messages").replaceChildren();
+  addMessage("Dấu Việt", `Chào mừng ${name} đến với Không gian Di sản Việt Nam!`);
+  updateRole();
+
+  playing = true;
+  paused = false;
+  document.body.classList.add("playing");
+  $("welcome").hidden = true;
+  $("rooms-modal").hidden = true;
+  $("hud").hidden = false;
+  $("connection").textContent = "Tham quan di sản";
+  $("online").textContent = "1 người";
+  $("quality").dispatchEvent(new Event("change"));
+  canvas.focus();
+  lastMouse = null;
+  try {
+    localStorage.setItem("dau-viet-name", name);
+  } catch {}
+  if (!coarse && document.pointerLockElement !== canvas)
+    $("mouse-hint").hidden = false;
+
+  toast(
+    role === "host"
+      ? "Chế độ tham quan: Bạn là HOST cầm cờ dẫn đoàn · Góc nhìn thứ ba."
+      : "Chế độ tham quan: Bạn là SINH VIÊN FPT · Góc nhìn thứ ba."
+  );
+}
+
 async function enterGame(name, action = "create", roomId = null) {
   if (starting) return;
   starting = true;
@@ -225,9 +293,10 @@ async function enterGame(name, action = "create", roomId = null) {
   if ($("btn-create")) $("btn-create").disabled = true;
   if ($("btn-join")) $("btn-join").disabled = true;
   $("join-error").textContent =
-    action === "create" ? "Đang tạo phòng dẫn đoàn…" : "Đang vào phòng tham quan…";
+    action === "create" ? "Đang chuẩn bị không gian dẫn đoàn…" : "Đang vào không gian tham quan…";
   try {
     await network.connect(name, action, roomId);
+    isSolo = false;
     playing = true;
     paused = false;
     document.body.classList.add("playing");
@@ -248,9 +317,14 @@ async function enterGame(name, action = "create", roomId = null) {
         : "Bạn là SINH VIÊN FPT · Góc nhìn thứ ba.",
     );
   } catch (error) {
-    wantsLook = false;
-    document.exitPointerLock?.();
-    $("join-error").textContent = error.message;
+    if (error.serverReported) {
+      wantsLook = false;
+      document.exitPointerLock?.();
+      $("join-error").textContent = error.message;
+    } else {
+      console.info("Máy chủ trực tuyến không phản hồi. Tự động chuyển sang Chế độ Tham quan Di sản Độc lập.");
+      enterSoloMode(name, action);
+    }
   } finally {
     starting = false;
     if ($("btn-create")) $("btn-create").disabled = false;
@@ -314,6 +388,7 @@ async function fetchAndRenderRooms() {
   `;
   try {
     const res = await fetch("/api/rooms");
+    if (!res.ok) throw new Error("HTTP " + res.status);
     const rooms = await res.json();
     if (!rooms || rooms.length === 0) {
       list.innerHTML = `
@@ -321,20 +396,27 @@ async function fetchAndRenderRooms() {
           <div class="rooms-empty-icon">🏛️</div>
           <p class="rooms-empty-title">Hiện chưa có phòng nào được mở</p>
           <p class="rooms-empty-desc">Bạn có thể trở thành người đầu tiên mở đoàn tham quan di sản và làm Host cầm cờ dẫn đoàn!</p>
-          <button type="button" id="btn-rooms-create-now" class="primary" style="margin-top: 14px; width: auto; padding: 10px 24px; display: inline-flex; align-items: center; gap: 8px;">
-            <span>🚩</span> Tạo phòng ngay
-          </button>
+          <div style="display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap;">
+            <button type="button" id="btn-rooms-create-now" class="primary" style="padding: 10px 22px; width: auto; font-weight: 700;">
+              🚩 Tạo phòng Host
+            </button>
+            <button type="button" id="btn-rooms-solo-now" class="secondary" style="padding: 10px 22px; width: auto; font-weight: 600;">
+              🎓 Tham quan Sinh viên FPT
+            </button>
+          </div>
         </div>
       `;
       $("btn-rooms-create-now")?.addEventListener("click", async () => {
         $("rooms-modal").hidden = true;
-        const name = $("player-name").value.trim();
-        if (!name) {
-          $("player-name").focus();
-          $("join-error").textContent = "Vui lòng nhập tên của bạn trước khi tạo phòng.";
-          return;
-        }
+        const name = $("player-name").value.trim() || "Khách tham quan";
+        $("player-name").value = name;
         await enterGame(name, "create");
+      });
+      $("btn-rooms-solo-now")?.addEventListener("click", async () => {
+        $("rooms-modal").hidden = true;
+        const name = $("player-name").value.trim() || "Sinh viên FPT";
+        $("player-name").value = name;
+        await enterGame(name, "join");
       });
       return;
     }
@@ -381,7 +463,33 @@ async function fetchAndRenderRooms() {
       list.appendChild(item);
     }
   } catch (err) {
-    list.innerHTML = `<div class="rooms-empty-msg">Lỗi tải danh sách phòng: ${err.message}</div>`;
+    list.innerHTML = `
+      <div class="rooms-empty-msg">
+        <div class="rooms-empty-icon">🏛️</div>
+        <p class="rooms-empty-title">Không gian tham quan di sản</p>
+        <p class="rooms-empty-desc">Trang web đang chạy trên nền tảng tĩnh (Vercel). Bạn có thể bấm tham quan ngay để khám phá trọn vẹn 6 đại công trình và các không gian bên trong!</p>
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap;">
+          <button type="button" id="btn-rooms-solo-host" class="primary" style="padding: 10px 22px; width: auto; font-weight: 700;">
+            🚩 Tham quan Host cầm cờ
+          </button>
+          <button type="button" id="btn-rooms-solo-student" class="secondary" style="padding: 10px 22px; width: auto; font-weight: 600;">
+            🎓 Tham quan Sinh viên FPT
+          </button>
+        </div>
+      </div>
+    `;
+    $("btn-rooms-solo-host")?.addEventListener("click", async () => {
+      $("rooms-modal").hidden = true;
+      const name = $("player-name").value.trim() || "Khách tham quan";
+      $("player-name").value = name;
+      await enterGame(name, "create");
+    });
+    $("btn-rooms-solo-student")?.addEventListener("click", async () => {
+      $("rooms-modal").hidden = true;
+      const name = $("player-name").value.trim() || "Sinh viên FPT";
+      $("player-name").value = name;
+      await enterGame(name, "join");
+    });
   }
 }
 
@@ -421,6 +529,7 @@ $("menu-button").addEventListener("click", () => menu(!paused));
 $("resume").addEventListener("click", () => menu(false));
 $("leave").addEventListener("click", () => {
   wantsLook = false;
+  isSolo = false;
   network.disconnect();
   document.exitPointerLock?.();
   playing = false;
@@ -432,7 +541,7 @@ $("leave").addEventListener("click", () => {
   $("welcome").hidden = false;
   document.body.classList.remove("playing");
   $("join-error").textContent =
-    "Bạn đã rời đoàn. Có thể tham gia lại bất cứ lúc nào.";
+    "Bạn đã rời không gian tham quan. Có thể tham gia lại bất cứ lúc nào.";
   refreshLobby();
 });
 document.addEventListener("pointerlockchange", () => {
@@ -546,7 +655,13 @@ document.addEventListener("keydown", (e) => {
     return;
   }
   if (e.code === "KeyR") {
-    network.send({ type: "respawn" });
+    if (network.ready) {
+      network.send({ type: "respawn" });
+    } else {
+      Object.assign(p, SPAWN, { vy: 0, pitch: -0.16, grounded: false });
+      cameraSnap = true;
+      toast("Đã quay về vị trí xuất phát.");
+    }
     return;
   }
   keys.add(e.code);
@@ -610,8 +725,14 @@ $("chat-button").addEventListener("click", openChat);
 $("chat-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const text = $("chat-input").value.trim();
-  if (text && !network.send({ type: "chat", text }))
-    toast("Chưa gửi được tin nhắn: đang mất kết nối.");
+  if (text) {
+    if (isSolo) {
+      const self = peerList.find((p) => p.id === selfId);
+      addMessage(self?.name || "Bạn", text);
+    } else if (!network.send({ type: "chat", text })) {
+      toast("Chưa gửi được tin nhắn: đang mất kết nối.");
+    }
+  }
   $("chat-input").value = "";
   $("chat-input").blur();
   $("chat-form").hidden = true;
@@ -636,10 +757,24 @@ for (const [i, l] of LANDMARKS.entries()) {
   if (group.childElementCount) $("room-select").append(group);
 }
 function visit(id, roomId) {
-  if (network.send({ type: "visit", id, roomId })) {
+  if (network.ready && network.send({ type: "visit", id, roomId })) {
     menu(false);
     cameraSnap = true;
-  } else toast("Chưa kết nối được với đoàn.");
+    return;
+  }
+  const landmark = LANDMARKS.find((l) => l.id === id);
+  if (landmark) {
+    const room = roomId
+      ? ROOMS.find((r) => r.buildingId === landmark.id && r.id === roomId)
+      : null;
+    const destination = room?.spawn || visitSpawn(landmark);
+    Object.assign(p, destination, { vy: 0, pitch: -0.16, grounded: false });
+    menu(false);
+    cameraSnap = true;
+    toast(`Đã đến: ${room?.name || landmark.name}`);
+  } else {
+    toast("Không tìm thấy địa điểm.");
+  }
 }
 $("visit-room").addEventListener("click", () => {
   const [id, roomId] = $("room-select").value.split(":");
@@ -790,7 +925,7 @@ function frame(now) {
   const dt = Math.min((now - lastTime) / 1000, 0.1);
   lastTime = now;
   if (playing) {
-    if (!paused && $("chat-form").hidden && network.ready) {
+    if (!paused && $("chat-form").hidden && (network.ready || isSolo)) {
       accumulator += dt;
       let steps = 0;
       const solemn = Math.abs(p.x + 66) < 13 && Math.abs(p.z + 48) < 13;

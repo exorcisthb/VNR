@@ -30,10 +30,12 @@ export class Network {
       const timer = setTimeout(() => {
         if (!settled) {
           settled = true;
-          reject(new Error("Máy chủ chưa phản hồi. Hãy thử lại."));
+          const err = new Error("Máy chủ chưa phản hồi. Hãy thử lại.");
+          err.serverUnreachable = true;
+          reject(err);
           ws.close();
         }
-      }, 12000);
+      }, 3500);
       ws.addEventListener("open", () => {
         if (this.stopped || generation !== this.generation) {
           ws.close();
@@ -59,7 +61,9 @@ export class Network {
         } else if (m.type === "error" && !welcomed) {
           clearTimeout(timer);
           settled = true;
-          reject(new Error(m.message));
+          const err = new Error(m.message);
+          err.serverReported = true;
+          reject(err);
           ws.close();
         } else this.onMessage(m);
       });
@@ -67,7 +71,9 @@ export class Network {
         clearTimeout(timer);
         if (!settled) {
           settled = true;
-          reject(new Error("Chưa kết nối được hoặc đoàn đã đủ người."));
+          const err = new Error("Chưa kết nối được máy chủ.");
+          err.serverUnreachable = true;
+          reject(err);
         }
         if (generation !== this.generation) return;
         this.ready = false;
