@@ -156,20 +156,23 @@
     </div>
     <section id="rooms-modal" class="modal-backdrop" hidden>
       <div class="menu-card rooms-modal-card">
+        <button type="button" id="btn-rooms-close" class="modal-close-btn" aria-label="Đóng danh sách phòng">✕</button>
         <div class="rooms-modal-header">
-          <div>
-            <span class="eyebrow">KHÔNG GIAN THAM QUAN · TỐI ĐA 50 NGƯỜI</span>
-            <h2>Danh sách phòng đang mở</h2>
-            <p>Chọn phòng do người khác tạo để tham quan cùng đoàn (bạn sẽ là sinh viên FPT).</p>
-          </div>
-          <button type="button" id="btn-rooms-close" class="icon-button" aria-label="Đóng danh sách phòng">✕</button>
+          <span class="eyebrow">KHÔNG GIAN THAM QUAN · TỐI ĐA 50 NGƯỜI</span>
+          <h2>Danh sách phòng đang mở</h2>
+          <p>Chọn phòng do người khác tạo để tham quan cùng đoàn (bạn sẽ là sinh viên FPT).</p>
         </div>
         <div id="rooms-list" class="rooms-list">
           <!-- Danh sách phòng được tải tự động -->
         </div>
         <div class="rooms-modal-actions">
           <button type="button" id="btn-rooms-refresh" class="secondary">Làm mới danh sách ⟳</button>
-          <button type="button" id="btn-rooms-cancel" class="secondary">Quay lại</button>
+          <div class="rooms-modal-actions-right">
+            <button type="button" id="btn-rooms-cancel" class="secondary">Quay lại</button>
+            <button type="button" id="btn-rooms-join-selected" class="primary" disabled>
+              Vào phòng ↗
+            </button>
+          </div>
         </div>
       </div>
     </section>

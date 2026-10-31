@@ -282,39 +282,99 @@ $("btn-join")?.addEventListener("click", async () => {
   await fetchAndRenderRooms();
 });
 
+let selectedRoomId = null;
+
+function updateJoinSelectedButton(rooms = []) {
+  const joinBtn = $("btn-rooms-join-selected");
+  if (!joinBtn) return;
+  if (!selectedRoomId) {
+    joinBtn.disabled = true;
+    joinBtn.innerHTML = `Vào phòng ↗`;
+    return;
+  }
+  const selectedRoom = rooms.find(r => r.id === selectedRoomId);
+  joinBtn.disabled = false;
+  if (selectedRoom) {
+    joinBtn.innerHTML = `Vào phòng "${selectedRoom.name || 'Đoàn tham quan'}" ↗`;
+  } else {
+    joinBtn.innerHTML = `Vào phòng đã chọn ↗`;
+  }
+}
+
 async function fetchAndRenderRooms() {
   const list = $("rooms-list");
   if (!list) return;
-  list.innerHTML = `<div class="rooms-empty-msg">Đang tải danh sách phòng...</div>`;
+  selectedRoomId = null;
+  updateJoinSelectedButton([]);
+  list.innerHTML = `
+    <div class="rooms-empty-msg">
+      <div class="rooms-empty-icon">⏳</div>
+      <p class="rooms-empty-title">Đang tải danh sách phòng...</p>
+    </div>
+  `;
   try {
     const res = await fetch("/api/rooms");
     const rooms = await res.json();
     if (!rooms || rooms.length === 0) {
       list.innerHTML = `
         <div class="rooms-empty-msg">
-          <p>Hiện chưa có phòng nào được mở.</p>
-          <p>Bạn có thể bấm <strong>"Tạo phòng"</strong> để mở đoàn mới và làm Host cầm cờ dẫn đoàn!</p>
+          <div class="rooms-empty-icon">🏛️</div>
+          <p class="rooms-empty-title">Hiện chưa có phòng nào được mở</p>
+          <p class="rooms-empty-desc">Bạn có thể trở thành người đầu tiên mở đoàn tham quan di sản và làm Host cầm cờ dẫn đoàn!</p>
+          <button type="button" id="btn-rooms-create-now" class="primary" style="margin-top: 14px; width: auto; padding: 10px 24px; display: inline-flex; align-items: center; gap: 8px;">
+            <span>🚩</span> Tạo phòng ngay
+          </button>
         </div>
       `;
+      $("btn-rooms-create-now")?.addEventListener("click", async () => {
+        $("rooms-modal").hidden = true;
+        const name = $("player-name").value.trim();
+        if (!name) {
+          $("player-name").focus();
+          $("join-error").textContent = "Vui lòng nhập tên của bạn trước khi tạo phòng.";
+          return;
+        }
+        await enterGame(name, "create");
+      });
       return;
     }
     list.innerHTML = "";
     for (const r of rooms) {
       const item = document.createElement("div");
       item.className = "room-card-item";
+      item.dataset.roomId = r.id;
       item.innerHTML = `
-        <div class="room-card-info">
-          <strong class="room-card-name">${r.name || "Đoàn tham quan di sản"}</strong>
-          <div class="room-card-details">
-            <span class="room-card-host">🚩 Host: <b>${r.hostName || "Trưởng đoàn"}</b></span>
-            <span class="room-card-count">🎓 Sĩ số: ${r.players}/${r.maxPlayers || 50}</span>
+        <div class="room-card-left">
+          <div class="room-radio-indicator">✓</div>
+          <div class="room-card-info">
+            <strong class="room-card-name">${r.name || "Đoàn tham quan di sản"}</strong>
+            <div class="room-card-details">
+              <span class="room-card-host">🚩 Host: <b>${r.hostName || "Trưởng đoàn"}</b></span>
+              <span class="room-card-count">🎓 Sĩ số: ${r.players}/${r.maxPlayers || 50}</span>
+              <span class="room-card-badge">🟢 Đang mở</span>
+            </div>
           </div>
         </div>
-        <button type="button" class="primary join-room-item-btn">
-          Vào phòng ↗
-        </button>
+        <div class="room-card-action-hint">
+          <span class="room-select-badge">Bấm để chọn</span>
+        </div>
       `;
-      item.querySelector(".join-room-item-btn")?.addEventListener("click", async () => {
+      // Click để chọn phòng
+      item.addEventListener("click", () => {
+        selectedRoomId = r.id;
+        list.querySelectorAll(".room-card-item").forEach(el => {
+          el.classList.remove("selected");
+          const badge = el.querySelector(".room-select-badge");
+          if (badge) badge.textContent = "Bấm để chọn";
+        });
+        item.classList.add("selected");
+        const badge = item.querySelector(".room-select-badge");
+        if (badge) badge.textContent = "Đã chọn ✓";
+        updateJoinSelectedButton(rooms);
+      });
+      // Double click để vào luôn
+      item.addEventListener("dblclick", async () => {
+        selectedRoomId = r.id;
         const name = $("player-name").value.trim();
         await enterGame(name, "join", r.id);
       });
@@ -324,6 +384,18 @@ async function fetchAndRenderRooms() {
     list.innerHTML = `<div class="rooms-empty-msg">Lỗi tải danh sách phòng: ${err.message}</div>`;
   }
 }
+
+$("btn-rooms-join-selected")?.addEventListener("click", async () => {
+  if (!selectedRoomId) return;
+  const name = $("player-name").value.trim();
+  if (!name) {
+    $("rooms-modal").hidden = true;
+    $("player-name").focus();
+    $("join-error").textContent = "Vui lòng nhập tên của bạn trước khi vào phòng.";
+    return;
+  }
+  await enterGame(name, "join", selectedRoomId);
+});
 
 $("btn-rooms-refresh")?.addEventListener("click", fetchAndRenderRooms);
 $("btn-rooms-close")?.addEventListener("click", () => {
