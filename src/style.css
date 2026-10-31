@@ -403,6 +403,29 @@ h1 em {
   background: rgba(232, 189, 126, 0.6);
 }
 
+.room-id-tag {
+  background: var(--gold);
+  color: #173c35;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+
+.room-card-item.room-full {
+  opacity: 0.6;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.room-card-badge.status-full {
+  background: rgba(235, 87, 87, 0.2);
+  color: #eb5757;
+  border-color: rgba(235, 87, 87, 0.3);
+}
+
 .room-card-item {
   display: flex;
   justify-content: space-between;

@@ -75,28 +75,19 @@ export async function attachGameCore({
 
     if (pathname === "/api/rooms") {
       const activeRooms = [];
-      for (const [rId, room] of rooms) {
-        if (room.players.size > 0 || Date.now() - room.createdAt < 120000) {
+      const sortedIds = Array.from(rooms.keys()).sort((a, b) => Number(a) - Number(b));
+      for (const rId of sortedIds) {
+        const room = rooms.get(rId);
+        if (room && room.players.size > 0) {
           activeRooms.push({
-            id: rId,
-            name: room.name,
-            hostName: room.hostName,
+            id: room.id,
+            name: room.name || `Đoàn tham quan #${room.id}`,
+            hostName: room.hostName || "Host",
             players: room.players.size,
-            maxPlayers: 50,
+            maxPlayers: room.maxPlayers || 50,
             createdAt: room.createdAt,
           });
         }
-      }
-      if (activeRooms.length === 0 && players.size > 0) {
-        const currentHost = Array.from(players.values()).find((p) => p.role === "host");
-        activeRooms.push({
-          id: "main",
-          name: currentHost ? `Đoàn tham quan của ${currentHost.name}` : "Đoàn tham quan di sản",
-          hostName: currentHost ? currentHost.name : "Người dẫn đoàn",
-          players: players.size,
-          maxPlayers: 50,
-          createdAt: Date.now(),
-        });
       }
       res.writeHead(200, {
         "Content-Type": "application/json; charset=utf-8",
@@ -188,6 +179,22 @@ export async function attachGameCore({
     }
   };
 
+  const allocateRoomId = () => {
+    let id = 1;
+    while (rooms.has(id)) {
+      id++;
+    }
+    return id;
+  };
+
+  const broadcastToRoom = (roomId, data, exceptWs) => {
+    const room = rooms.get(roomId);
+    if (!room) return;
+    for (const [ws] of room.players) {
+      if (ws !== exceptWs) send(ws, data);
+    }
+  };
+
   const broadcast = (data, except) => {
     for (const [ws] of players) if (ws !== except) send(ws, data);
   };
@@ -241,7 +248,6 @@ export async function attachGameCore({
       let p = players.get(ws);
       if (m.type === "join") {
         if (p) return;
-        if (players.size >= 50) return ws.close(1013, "Phòng đã đủ 50 người.");
         const name = clean(m.name, 20);
         if (!name) return reject(ws, "Hãy nhập tên từ 1 đến 20 ký tự.");
         clearTimeout(timeout);
@@ -251,70 +257,66 @@ export async function attachGameCore({
         if (m.action === "create" || m.role === "host") {
           // Người chọn Tạo phòng: là Host dẫn đoàn cầm cờ
           role = "host";
-          // Đảm bảo chỉ có 1 host dẫn đoàn, chuyển host cũ thành sinh viên
-          for (const other of players.values()) {
-            if (other.role === "host") other.role = "student";
-          }
-          const roomId = "room-" + randomUUID().slice(0, 8);
+          const roomId = allocateRoomId();
           assignedRoom = {
             id: roomId,
-            name: `Đoàn tham quan của ${name}`,
+            name: `Đoàn tham quan #${roomId} của ${name}`,
+            hostWs: ws,
+            hostId: null,
             hostName: name,
             createdAt: Date.now(),
             players: new Map(),
+            history: [],
+            maxPlayers: 50,
           };
           rooms.set(roomId, assignedRoom);
-        } else if (m.action === "join" || m.role === "student") {
-          // Người chọn Vào phòng: luôn là Sinh viên FPT
-          role = "student";
-          if (m.roomId && rooms.has(m.roomId)) {
-            assignedRoom = rooms.get(m.roomId);
-          } else {
-            assignedRoom = Array.from(rooms.values()).find((r) => r.players.size < 50);
-          }
-          if (!assignedRoom) {
-            assignedRoom = {
-              id: "main",
-              name: "Đoàn tham quan di sản",
-              hostName: "Chờ trưởng đoàn",
-              createdAt: Date.now(),
-              players: new Map(),
-            };
-            rooms.set("main", assignedRoom);
-          }
         } else {
-          // Tương thích ngược: người đầu tiên là host, người sau là sinh viên
-          role = players.size === 0 ? "host" : "student";
+          // Người chọn Vào phòng: BẮT BUỘC luôn là Sinh viên FPT
+          role = "student";
+          const targetId = Number(m.roomId);
+          if (!targetId || !rooms.has(targetId)) {
+            return reject(ws, "Phòng này không tồn tại hoặc Trưởng đoàn (Host) đã giải tán phòng.");
+          }
+          assignedRoom = rooms.get(targetId);
+          if (assignedRoom.players.size >= (assignedRoom.maxPlayers || 50)) {
+            return reject(ws, "Phòng đã đủ tối đa 50 người. Vui lòng chọn phòng khác.");
+          }
         }
 
         p = {
           id: randomUUID().slice(0, 8),
           name,
           role,
-          color: ["#d7ac68", "#689b9a", "#ae7f83", "#829d63"][players.size % 4],
+          color: ["#d7ac68", "#689b9a", "#ae7f83", "#829d63"][assignedRoom.players.size % 4],
           ...SPAWN,
           lastMove: Date.now(),
         };
-        players.set(ws, p);
-        if (assignedRoom) {
-          assignedRoom.players.set(ws, p);
-          ws.roomId = assignedRoom.id;
+
+        if (role === "host") {
+          assignedRoom.hostId = p.id;
         }
+
+        players.set(ws, p);
+        assignedRoom.players.set(ws, p);
+        ws.roomId = assignedRoom.id;
+
         send(ws, {
           type: "welcome",
           id: p.id,
+          roomId: assignedRoom.id,
+          role: p.role,
           spawn: SPAWN,
           version: WORLD_VERSION,
           revision,
           edits: Array.from(world.edits),
-          players: Array.from(players.values(), publicPlayer),
-          history,
+          players: Array.from(assignedRoom.players.values(), publicPlayer),
+          history: assignedRoom.history,
           mode: "tour",
         });
-        broadcast({ type: "joined", player: publicPlayer(p) }, ws);
-        broadcast({
+        broadcastToRoom(assignedRoom.id, { type: "joined", player: publicPlayer(p) }, ws);
+        broadcastToRoom(assignedRoom.id, {
           type: "players",
-          players: Array.from(players.values(), publicPlayer),
+          players: Array.from(assignedRoom.players.values(), publicPlayer),
         });
         return;
       }
@@ -368,9 +370,12 @@ export async function attachGameCore({
         const text = clean(m.text, 160);
         if (!text) return;
         const message = { type: "chat", name: p.name, text, time: Date.now() };
-        history.push(message);
-        if (history.length > 25) history.shift();
-        broadcast(message);
+        if (ws.roomId && rooms.has(ws.roomId)) {
+          const room = rooms.get(ws.roomId);
+          room.history.push(message);
+          if (room.history.length > 25) room.history.shift();
+          broadcastToRoom(room.id, message);
+        }
       }
       if (m.type === "edit")
         reject(ws, "Đây là chế độ tham quan, không chỉnh sửa khối.");
@@ -383,31 +388,43 @@ export async function attachGameCore({
         if (ws.roomId && rooms.has(ws.roomId)) {
           const room = rooms.get(ws.roomId);
           room.players.delete(ws);
-          if (room.players.size === 0 && room.id !== "main") {
-            rooms.delete(ws.roomId);
-          } else if (p.role === "host") {
-            const next = room.players.values().next().value;
-            if (next) {
-              next.role = "host";
-              room.hostName = next.name;
+
+          if (ws === room.hostWs || p.role === "host") {
+            // Host rời phòng -> giải tán toàn bộ phòng và thu hồi ID
+            console.log(`[Phòng #${room.id}] Host ${p.name} đã rời phòng. Đang giải tán phòng #${room.id}...`);
+            for (const [memberWs] of room.players) {
+              send(memberWs, {
+                type: "disbanded",
+                message: `Trưởng đoàn (Host: ${p.name}) đã rời phòng. Đoàn tham quan #${room.id} đã giải tán.`,
+              });
+              players.delete(memberWs);
+              memberWs.roomId = null;
+              memberWs.close(1000, "Host left");
             }
+            room.players.clear();
+            rooms.delete(room.id); // Thu hồi ID phòng để tái sử dụng
+          } else {
+            // Sinh viên rời phòng
+            broadcastToRoom(room.id, { type: "left", id: p.id, name: p.name });
+            broadcastToRoom(room.id, {
+              type: "players",
+              players: Array.from(room.players.values(), publicPlayer),
+            });
           }
         }
-        if (p.role === "host") {
-          const next = players.values().next().value;
-          if (next) next.role = "host";
-        }
-        broadcast({ type: "left", id: p.id, name: p.name });
       }
     });
   });
 
   const tick = setInterval(() => {
-    if (players.size)
-      broadcast({
-        type: "players",
-        players: Array.from(players.values(), publicPlayer),
-      });
+    for (const room of rooms.values()) {
+      if (room.players.size) {
+        broadcastToRoom(room.id, {
+          type: "players",
+          players: Array.from(room.players.values(), publicPlayer),
+        });
+      }
+    }
   }, 1000 / 15);
 
   const saves = setInterval(() => {

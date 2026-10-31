@@ -69,6 +69,7 @@ let world = new VoxelWorld(),
   isSolo = false,
   visualY = SPAWN.y,
   selfId = null,
+  currentRoomId = null,
   peerList = [],
   currentRoom = null,
   currentLandmark = LANDMARKS[0],
@@ -101,7 +102,7 @@ const network = new Network(onMessage, (ready) => {
     return;
   }
   $("connection").textContent = ready
-    ? "Đoàn đang tham quan"
+    ? (currentRoomId ? `Phòng #${currentRoomId}` : "Đoàn đang tham quan")
     : "Mất kết nối · đang thử lại";
   if (!ready && playing) {
     clearInput();
@@ -112,6 +113,7 @@ const network = new Network(onMessage, (ready) => {
 function onMessage(m) {
   if (m.type === "welcome") {
     selfId = m.id;
+    currentRoomId = m.roomId;
     world = new VoxelWorld(m.edits);
     for (const g of chunks.meshes.values()) {
       scene.remove(g);
@@ -128,6 +130,10 @@ function onMessage(m) {
     $("messages").replaceChildren();
     m.history.forEach((c) => addMessage(c.name, c.text));
     updateRole();
+    if (m.roomId) {
+      $("connection").textContent = `Phòng #${m.roomId}`;
+      $("online").textContent = `${peerList.length}/50 người`;
+    }
   } else if (m.type === "players") {
     peerList = m.players;
     avatars.sync(peerList, selfId);
@@ -143,7 +149,21 @@ function onMessage(m) {
     addMessage("Dấu Việt", m.name + " đã rời đoàn.");
   } else if (m.type === "chat") addMessage(m.name, m.text);
   else if (m.type === "error") toast(m.message);
-  else if (m.type === "correction") {
+  else if (m.type === "disbanded") {
+    wantsLook = false;
+    document.exitPointerLock?.();
+    playing = false;
+    paused = false;
+    clearInput();
+    avatars.clear();
+    $("pause").hidden = true;
+    $("hud").hidden = true;
+    $("welcome").hidden = false;
+    document.body.classList.remove("playing");
+    $("join-error").textContent = m.message;
+    toast(m.message);
+    refreshLobby();
+  } else if (m.type === "correction") {
     if (Math.hypot(p.x - m.x, p.z - m.z) > 2) cameraSnap = true;
     Object.assign(p, { x: m.x, y: m.y, z: m.z, vy: 0 });
     if (m.yaw !== undefined) {
@@ -293,7 +313,7 @@ async function enterGame(name, action = "create", roomId = null) {
   if ($("btn-create")) $("btn-create").disabled = true;
   if ($("btn-join")) $("btn-join").disabled = true;
   $("join-error").textContent =
-    action === "create" ? "Đang chuẩn bị không gian dẫn đoàn…" : "Đang vào không gian tham quan…";
+    action === "create" ? "Đang chuẩn bị không gian dẫn đoàn…" : "Đang vào phòng tham quan…";
   try {
     await network.connect(name, action, roomId);
     isSolo = false;
@@ -317,14 +337,10 @@ async function enterGame(name, action = "create", roomId = null) {
         : "Bạn là SINH VIÊN FPT · Góc nhìn thứ ba.",
     );
   } catch (error) {
-    if (error.serverReported) {
-      wantsLook = false;
-      document.exitPointerLock?.();
-      $("join-error").textContent = error.message;
-    } else {
-      console.info("Máy chủ trực tuyến không phản hồi. Tự động chuyển sang Chế độ Tham quan Di sản Độc lập.");
-      enterSoloMode(name, action);
-    }
+    wantsLook = false;
+    document.exitPointerLock?.();
+    $("join-error").textContent = error.message;
+    toast(error.message);
   } finally {
     starting = false;
     if ($("btn-create")) $("btn-create").disabled = false;
@@ -366,13 +382,19 @@ function updateJoinSelectedButton(rooms = []) {
     joinBtn.innerHTML = `Vào phòng ↗`;
     return;
   }
-  const selectedRoom = rooms.find(r => r.id === selectedRoomId);
-  joinBtn.disabled = false;
-  if (selectedRoom) {
-    joinBtn.innerHTML = `Vào phòng "${selectedRoom.name || 'Đoàn tham quan'}" ↗`;
-  } else {
-    joinBtn.innerHTML = `Vào phòng đã chọn ↗`;
+  const selectedRoom = rooms.find((r) => Number(r.id) === Number(selectedRoomId));
+  if (!selectedRoom) {
+    joinBtn.disabled = true;
+    joinBtn.innerHTML = `Vào phòng ↗`;
+    return;
   }
+  if (selectedRoom.players >= (selectedRoom.maxPlayers || 50)) {
+    joinBtn.disabled = true;
+    joinBtn.innerHTML = `Phòng #${selectedRoom.id} đã đầy (50/50)`;
+    return;
+  }
+  joinBtn.disabled = false;
+  joinBtn.innerHTML = `Vào phòng #${selectedRoom.id} ↗`;
 }
 
 async function fetchAndRenderRooms() {
@@ -395,101 +417,79 @@ async function fetchAndRenderRooms() {
         <div class="rooms-empty-msg">
           <div class="rooms-empty-icon">🏛️</div>
           <p class="rooms-empty-title">Hiện chưa có phòng nào được mở</p>
-          <p class="rooms-empty-desc">Bạn có thể trở thành người đầu tiên mở đoàn tham quan di sản và làm Host cầm cờ dẫn đoàn!</p>
-          <div style="display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap;">
-            <button type="button" id="btn-rooms-create-now" class="primary" style="padding: 10px 22px; width: auto; font-weight: 700;">
-              🚩 Tạo phòng Host
-            </button>
-            <button type="button" id="btn-rooms-solo-now" class="secondary" style="padding: 10px 22px; width: auto; font-weight: 600;">
-              🎓 Tham quan Sinh viên FPT
-            </button>
-          </div>
+          <p class="rooms-empty-desc">Chưa có Host nào mở đoàn tham quan. Bạn có thể quay lại trang chính và bấm <b>"Tạo phòng"</b> để mở đoàn đầu tiên với tư cách Host cầm cờ dẫn đoàn!</p>
         </div>
       `;
-      $("btn-rooms-create-now")?.addEventListener("click", async () => {
-        $("rooms-modal").hidden = true;
-        const name = $("player-name").value.trim() || "Khách tham quan";
-        $("player-name").value = name;
-        await enterGame(name, "create");
-      });
-      $("btn-rooms-solo-now")?.addEventListener("click", async () => {
-        $("rooms-modal").hidden = true;
-        const name = $("player-name").value.trim() || "Sinh viên FPT";
-        $("player-name").value = name;
-        await enterGame(name, "join");
-      });
       return;
     }
     list.innerHTML = "";
     for (const r of rooms) {
+      const isFull = r.players >= (r.maxPlayers || 50);
       const item = document.createElement("div");
-      item.className = "room-card-item";
+      item.className = "room-card-item" + (isFull ? " room-full" : "");
       item.dataset.roomId = r.id;
       item.innerHTML = `
         <div class="room-card-left">
-          <div class="room-radio-indicator">✓</div>
+          <div class="room-radio-indicator">${isFull ? "✕" : "✓"}</div>
           <div class="room-card-info">
-            <strong class="room-card-name">${r.name || "Đoàn tham quan di sản"}</strong>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="room-id-tag">#${r.id}</span>
+              <strong class="room-card-name">${r.name || `Đoàn tham quan #${r.id}`}</strong>
+            </div>
             <div class="room-card-details">
               <span class="room-card-host">🚩 Host: <b>${r.hostName || "Trưởng đoàn"}</b></span>
-              <span class="room-card-count">🎓 Sĩ số: ${r.players}/${r.maxPlayers || 50}</span>
-              <span class="room-card-badge">🟢 Đang mở</span>
+              <span class="room-card-count">🎓 Sĩ số: ${r.players}/${r.maxPlayers || 50} người</span>
+              <span class="room-card-badge ${isFull ? "status-full" : "status-open"}">
+                ${isFull ? "🔴 Đã đầy" : "🟢 Đang mở"}
+              </span>
             </div>
           </div>
         </div>
         <div class="room-card-action-hint">
-          <span class="room-select-badge">Bấm để chọn</span>
+          <span class="room-select-badge">${isFull ? "Đã đủ người" : "Bấm để chọn"}</span>
         </div>
       `;
-      // Click để chọn phòng
-      item.addEventListener("click", () => {
-        selectedRoomId = r.id;
-        list.querySelectorAll(".room-card-item").forEach(el => {
-          el.classList.remove("selected");
-          const badge = el.querySelector(".room-select-badge");
-          if (badge) badge.textContent = "Bấm để chọn";
+
+      if (!isFull) {
+        item.addEventListener("click", () => {
+          selectedRoomId = r.id;
+          list.querySelectorAll(".room-card-item").forEach((el) => {
+            el.classList.remove("selected");
+            const badge = el.querySelector(".room-select-badge");
+            if (badge && !el.classList.contains("room-full")) badge.textContent = "Bấm để chọn";
+          });
+          item.classList.add("selected");
+          const badge = item.querySelector(".room-select-badge");
+          if (badge) badge.textContent = "Đã chọn ✓";
+          updateJoinSelectedButton(rooms);
         });
-        item.classList.add("selected");
-        const badge = item.querySelector(".room-select-badge");
-        if (badge) badge.textContent = "Đã chọn ✓";
-        updateJoinSelectedButton(rooms);
-      });
-      // Double click để vào luôn
-      item.addEventListener("dblclick", async () => {
-        selectedRoomId = r.id;
-        const name = $("player-name").value.trim();
-        await enterGame(name, "join", r.id);
-      });
+
+        item.addEventListener("dblclick", async () => {
+          selectedRoomId = r.id;
+          const name = $("player-name").value.trim() || "Sinh viên FPT";
+          $("player-name").value = name;
+          $("rooms-modal").hidden = true;
+          await enterGame(name, "join", r.id);
+        });
+      } else {
+        item.addEventListener("click", () => {
+          toast(`Phòng #${r.id} đã đủ tối đa 50 người.`);
+        });
+      }
       list.appendChild(item);
     }
   } catch (err) {
     list.innerHTML = `
       <div class="rooms-empty-msg">
-        <div class="rooms-empty-icon">🏛️</div>
-        <p class="rooms-empty-title">Không gian tham quan di sản</p>
-        <p class="rooms-empty-desc">Trang web đang chạy trên nền tảng tĩnh (Vercel). Bạn có thể bấm tham quan ngay để khám phá trọn vẹn 6 đại công trình và các không gian bên trong!</p>
-        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap;">
-          <button type="button" id="btn-rooms-solo-host" class="primary" style="padding: 10px 22px; width: auto; font-weight: 700;">
-            🚩 Tham quan Host cầm cờ
-          </button>
-          <button type="button" id="btn-rooms-solo-student" class="secondary" style="padding: 10px 22px; width: auto; font-weight: 600;">
-            🎓 Tham quan Sinh viên FPT
-          </button>
-        </div>
+        <div class="rooms-empty-icon">⚠️</div>
+        <p class="rooms-empty-title">Chưa kết nối được máy chủ phòng trực tuyến</p>
+        <p class="rooms-empty-desc">Hệ thống phòng nhiều người chơi cần máy chủ WebSocket đang chạy. Hãy kiểm tra kết nối mạng hoặc thử lại.</p>
+        <button type="button" id="btn-rooms-retry-fetch" class="secondary" style="margin-top: 14px; width: auto; padding: 8px 22px;">
+          Làm mới danh sách ⟳
+        </button>
       </div>
     `;
-    $("btn-rooms-solo-host")?.addEventListener("click", async () => {
-      $("rooms-modal").hidden = true;
-      const name = $("player-name").value.trim() || "Khách tham quan";
-      $("player-name").value = name;
-      await enterGame(name, "create");
-    });
-    $("btn-rooms-solo-student")?.addEventListener("click", async () => {
-      $("rooms-modal").hidden = true;
-      const name = $("player-name").value.trim() || "Sinh viên FPT";
-      $("player-name").value = name;
-      await enterGame(name, "join");
-    });
+    $("btn-rooms-retry-fetch")?.addEventListener("click", fetchAndRenderRooms);
   }
 }
 
@@ -502,6 +502,7 @@ $("btn-rooms-join-selected")?.addEventListener("click", async () => {
     $("join-error").textContent = "Vui lòng nhập tên của bạn trước khi vào phòng.";
     return;
   }
+  $("rooms-modal").hidden = true;
   await enterGame(name, "join", selectedRoomId);
 });
 
@@ -530,6 +531,7 @@ $("resume").addEventListener("click", () => menu(false));
 $("leave").addEventListener("click", () => {
   wantsLook = false;
   isSolo = false;
+  currentRoomId = null;
   network.disconnect();
   document.exitPointerLock?.();
   playing = false;
