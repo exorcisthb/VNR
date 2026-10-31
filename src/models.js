@@ -5,13 +5,14 @@ const cache = new Map();
 export const MODEL_URLS = {
   tree: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('cây.glb')}?v=3`,
   carpet: `${import.meta.env?.BASE_URL ?? '/'}models/thamr.glb`,
-  fountain: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('đài phun nước.glb')}?v=2`,
+  fountain: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('đài phun nước.glb')}?v=3`,
   lotus: `${import.meta.env?.BASE_URL ?? '/'}models/hoa%20sen.glb`,
   chandelier: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('đèn chùm.glb')}`,
   hoChiMinhBust: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('tượng bác.glb')}`,
   quanAmStatue: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('tượng quan âm.glb')}`,
   restingPresident: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('thi hài bác.glb')}`,
-  banquetPainting: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('tranh phòng đại yến.glb')}`,
+  banquetPainting: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('tranh phòng đại yến.glb')}?v=2`,
+  tank: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('xe tăng.glb')}?v=2`,
 };
 
 // Bake scan transforms and put the bottom at zero, centered horizontally.

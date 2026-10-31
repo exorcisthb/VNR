@@ -3,6 +3,7 @@ import { addModelInstances, MODEL_URLS } from "./models.js";
 import { LANDMARKS } from "../shared/landmarks.mjs";
 import { TREES } from "../shared/environment.mjs";
 import { surfaceTexture } from "./materials.js";
+import { createFountainWater, fountainStructureGeometry } from "./fountain.js";
 
 function boardTexture(title, subtitle) {
   const c = document.createElement("canvas");
@@ -214,7 +215,7 @@ export function addScenery(scene) {
     objects.push(face);
   }
 
-  // Đài phun nước trước cổng Dinh Độc Lập dùng model GLB đã giảm polygon.
+  // Preserve the complete fountain scan, including its basin and stone details.
   const fountainGroup = new THREE.Group();
   fountainGroup.position.set(60, 3.0, -13.5);
   // Vòng lát đá bao quanh, khớp với khu sân cỏ đã có.
@@ -243,10 +244,14 @@ export function addScenery(scene) {
   }
   fountainGroup.add(fountainFallback);
   addModelInstances(fountainGroup, MODEL_URLS.fountain, [{
-    position: [0, 0, 0], width: 10, height: 5.4,
+    position: [0, 0, 0], width: 10,
   }]).then(model => {
     if (!model?.children.length) return;
-    model.traverse(mesh => { if (mesh.isMesh) mesh.frustumCulled = false; });
+    model.traverse(mesh => {
+      if (!mesh.isMesh) return;
+      mesh.geometry = fountainStructureGeometry(mesh.geometry);
+      mesh.computeBoundingSphere();
+    });
     fountainFallback.visible = false;
     console.info("Đã tải model đài phun nước GLB.");
   }).catch(error => {
@@ -254,59 +259,8 @@ export function addScenery(scene) {
     console.warn("Không tải được model đài phun nước:", error);
   });
 
-  // Dải nước mảnh chảy từ tầng trên xuống bể; shader dịch vệt sáng liên tục.
-  const waterFlow = new THREE.ShaderMaterial({
-    transparent: true,
-    depthWrite: false,
-    side: THREE.DoubleSide,
-    uniforms: { uTime: { value: 0 } },
-    vertexShader: `
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform float uTime;
-      varying vec2 vUv;
-      void main() {
-        float streak = fract(vUv.x * 6.0 - uTime * 1.7);
-        float glint = 1.0 - smoothstep(0.04, 0.36, streak);
-        float alpha = 0.16 + glint * 0.48;
-        gl_FragColor = vec4(0.70, 0.91, 1.0, alpha);
-        #include <tonemapping_fragment>
-        #include <colorspace_fragment>
-      }
-    `,
-  });
-  const waterGroup = new THREE.Group();
-  function addWaterStream(curve, radius, segments = 44) {
-    const stream = new THREE.Mesh(
-      new THREE.TubeGeometry(curve, segments, radius, 7, false), waterFlow,
-    );
-    stream.frustumCulled = false;
-    stream.renderOrder = 2;
-    waterGroup.add(stream);
-  }
-  // Tia giữa vọt lên khỏi đỉnh đài.
-  addWaterStream(new THREE.QuadraticBezierCurve3(
-    new THREE.Vector3(0, 5.15, 0),
-    new THREE.Vector3(0.08, 6.0, 0.04),
-    new THREE.Vector3(0, 7.0, 0),
-    ), 0.12, 28);
-  // Các tia nước xuất phát quanh vòi trên cùng, vồng lên rồi rơi vào bể.
-  for (let i = 0; i < 18; i++) {
-    const angle = (i * Math.PI * 2) / 18;
-    const dx = Math.cos(angle), dz = Math.sin(angle);
-    const curve = new THREE.QuadraticBezierCurve3(
-      new THREE.Vector3(dx * 0.16, 5.05, dz * 0.16),
-      new THREE.Vector3(dx * 2.4, 8.5 + (i % 3) * 0.12, dz * 2.4),
-      new THREE.Vector3(dx * 4.55, 0.85, dz * 4.55),
-    );
-    addWaterStream(curve, i % 2 ? 0.055 : 0.065);
-  }
-  fountainGroup.add(waterGroup);
+  const fountainWater = createFountainWater();
+  fountainGroup.add(fountainWater.group);
 
   // Vành bồn hoa và cây cảnh tỉa tròn bao quanh đài phun nước
   const shrubFallbacks = new THREE.Group();
@@ -501,7 +455,7 @@ export function addScenery(scene) {
       for (const o of objects)
         o.visible =
           Math.hypot(o.position.x - x, o.position.z - z) < distance + 25;
-      waterFlow.uniforms.uTime.value = performance.now() * 0.001;
+      if (fountainGroup.visible) fountainWater.update(performance.now() * 0.001);
     },
   };
 }

@@ -561,7 +561,7 @@ for (const [i, l] of LANDMARKS.entries()) {
     option.textContent = room.name;
     group.append(option);
   }
-  $("room-select").append(group);
+  if (group.childElementCount) $("room-select").append(group);
 }
 function visit(id, roomId) {
   if (network.send({ type: "visit", id, roomId })) {
@@ -615,7 +615,7 @@ function updateInfo() {
   $("landmark-card").hidden = !currentRoom && d > 55;
   $("room-type").textContent = currentRoom
     ? "KHÔNG GIAN NỘI THẤT"
-    : "DẤU ẤN KIẾN TRÚC";
+    : currentLandmark.outdoor ? "KHU TRƯNG BÀY NGOÀI TRỜI" : "DẤU ẤN KIẾN TRÚC";
   $("landmark-title").textContent = (source.name || "").normalize("NFC");
   $("landmark-description").textContent = (source.description || "").normalize("NFC");
   drawMap($("map"));
@@ -646,6 +646,9 @@ function drawMap(c) {
     g.moveTo(X(x), Z(20));
     g.lineTo(X(x), Z(70));
   }
+  const tank = LANDMARKS.find(l => l.id === "tank");
+  g.moveTo(X(tank.x), Z(20));
+  g.lineTo(X(tank.x), Z(tank.z + 10));
   g.stroke();
   g.fillStyle = "#739c96";
   g.beginPath();

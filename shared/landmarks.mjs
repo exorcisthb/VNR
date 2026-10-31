@@ -1,4 +1,5 @@
 import { B } from "./blocks.mjs";
+import { TANK_LANDMARK } from "./tank-exhibit.mjs";
 // Một khối biểu diễn khoảng 1–1,4 m. Bố cục công viên là hư cấu;
 // các công trình ngoài đời không nằm cạnh nhau như trong bản đồ này.
 export const LANDMARKS = [
@@ -57,6 +58,7 @@ LANDMARKS.push(
     description: "Trống đồng là hiện vật tiêu biểu của văn hóa Đông Sơn. Mô hình phóng lớn cao 4,2 m, đường kính mặt 7,4 m; hoa văn cách điệu gợi ngôi sao, chim và các vành đồng tâm, không phải bản sao một bảo vật cụ thể.",
     source: "https://baotanglichsu.vn/vi/Articles/1001/13602/gioi-thieu-bao-vat-quoc-gia-1-trong-djong-ngoc-lu-hien-vat-tieu-bieu-nhat-cua-nen-van-hoa-djong-son.html",
   },
+  TANK_LANDMARK,
 );
 export function isProtected(x, y, z, margin = 0) {
   return LANDMARKS.some(
@@ -88,6 +90,9 @@ export function buildLandmarks(put, bounds) {
   };
   for (let z = bounds.minZ; z <= bounds.maxZ; z++)
     for (let x = bounds.minX; x <= bounds.maxX; x++) {
+      const tank = TANK_LANDMARK;
+      if ((x >= tank.bounds[0] && x <= tank.bounds[1] && z >= tank.bounds[2] && z <= tank.bounds[3]) ||
+          (Math.abs(x - tank.x) <= 2 && z >= tank.bounds[3] && z <= 20)) paint(x, z, B.PATH);
       for (const cx of [-87, 98]) {
         if (Math.abs(x-cx)<3 && z>=20 && z<=70) paint(x,z,B.PATH);
         if (Math.abs(x-cx)<=20 && z>=66 && z<=107) paint(x,z,B.PATH);

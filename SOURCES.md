@@ -33,3 +33,8 @@ Host cầm cờ Việt Nam; sinh viên mặc polo cam, quần đen, giày và th
 - [Du lịch Ba Đình: Chùa Một Cột, Liên Hoa Đài và hồ Linh Chiểu](https://visitbadinh.com.vn/vi/place/details/chua-mot-cot-6). Dựng đài gỗ, một trụ đá, mái ngói cong và cầu thang; đồ thờ và quy mô được giản lược.
 - [Bảo tàng Lịch sử Quốc gia: trống đồng Ngọc Lũ, hình dáng và các vành hoa văn](https://baotanglichsu.vn/vi/Articles/1001/13602/gioi-thieu-bao-vat-quoc-gia-1-trong-djong-ngoc-lu-hien-vat-tieu-bieu-nhat-cua-nen-van-hoa-djong-son.html). Trống trong game phóng lớn cao 4,2 m, không phải kích thước hiện vật thật. Hoa văn ngôi sao, chim và người là bản cách điệu tự vẽ bằng Canvas, không tái tạo chính xác một trống cụ thể.
 - Ba ảnh người dùng cung cấp chỉ dùng tham khảo hình dáng; không đưa ảnh, watermark hay số điện thoại vào game.
+
+## Khu trưng bày xe tăng
+
+- Hình học, UV và chất liệu lấy từ file `3D/xe tăng.glb` do người dùng cung cấp; không suy đoán giấy phép hoặc tác giả của model. Số hiệu nổi ở hai bên tháp pháo được hiệu chỉnh thành **390** theo yêu cầu. Bản dùng trong game nằm tại `public/models/xe tăng.glb`.
+- Bục đá, hàng rào kín và lối đi bên phải Dinh Độc Lập là bố trí thêm cho bản đồ game. Liên kết tư liệu Dinh Độc Lập trong thẻ khu vực cung cấp bối cảnh tham quan, không phải nguồn tải GLB.

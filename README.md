@@ -1,6 +1,6 @@
 # Dấu Việt — Hành trình di sản
 
-Game tham quan 3D nhiều người dùng **Three.js + Node.js + WebSocket**. Năm điểm đến nằm trong **một bản đồ chung**: ba công trình ban đầu, Chùa Một Cột và quảng trường trống đồng Đông Sơn. Có 11 vị trí nội thất/quan sát, cửa vào và cầu thang. Mô hình dựa trên tư liệu công khai, bố trí rút gọn cho mục đích học tập; không phải bản sao 1:1.
+Game tham quan 3D nhiều người dùng **Three.js + Node.js + WebSocket**. Sáu điểm đến nằm trong **một bản đồ chung**: ba công trình ban đầu, Chùa Một Cột, quảng trường trống đồng Đông Sơn và khu trưng bày xe tăng. Có 11 vị trí nội thất/quan sát, cửa vào và cầu thang. Mô hình dựa trên tư liệu công khai, bố trí rút gọn cho mục đích học tập; không phải bản sao 1:1.
 
 ## Chạy tại máy
 
@@ -35,6 +35,8 @@ Mở **http://127.0.0.1:3000** (hoặc `http://localhost:3000`). Máy khác cùn
 Chùa Một Cột nằm ở phía tây nam (-87, 83), có hồ, trụ đá, đài gỗ, mái cong và cầu thang lên. Khu trống đồng ở phía đông nam (98, 87): riêng thân trống cao **4,2 m**, mặt rộng **7,4 m**, cao hơn nhân vật khoảng 2,45 m. Có đài quan sát cạnh trống để xem hoa văn mặt trên. Cả hai khu nối với đường chính, không đổi map.
 
 Menu có bản đồ chung và ghé thăm nhanh từng công trình/phòng; mọi nơi vẫn đi bộ tới được. Tư liệu và mức độ mô phỏng ở [SOURCES.md](./SOURCES.md), cũng đọc được bằng E trong game.
+
+Khu trưng bày xe tăng nằm bên phải Dinh Độc Lập, tại **(110, -10)**, nối với đường chính và có nút ghé thăm nhanh trong menu. Xe giữ chi tiết, chất liệu và tỷ lệ của `3D/xe tăng.glb`; số hiệu nổi ở hai bên tháp pháo đã được sửa thành **390**. Xe đặt trên bục đá, bao quanh bằng rào kín bốn phía. Vùng va chạm dùng chung ở client/server chặn đi bộ, nhảy và di chuyển xuyên rào vào trong. Model chỉ bắt đầu tải khi người chơi đến gần khu này. Sau khi thay file gốc, chạy `npm run prepare:models -- "xe tăng"` rồi `npm run build`. Đây là khu bố trí thêm trong game; nguồn hình học là file người dùng cung cấp.
 
 ## Đưa lên Render miễn phí
 

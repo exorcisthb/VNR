@@ -647,6 +647,7 @@ export class ArchitectureRenderer {
   constructor(scene) {
     this.buildings = [];
     this.doors = [];
+    this.modelDisplays = [];
     this.materials = { ...makeMaterials(), ...heritageMaterials() };
     const geometries = {
       box: new THREE.BoxGeometry(1, 1, 1),
@@ -739,6 +740,9 @@ export class ArchitectureRenderer {
       }
       scene.add(group);
       this.buildings.push({ data: b, group, lights, signs });
+      for (const display of b.modelDisplays || []) {
+        this.modelDisplays.push({ ...display, parent: group, requested: false });
+      }
       addModelInstances(group, MODEL_URLS.hoChiMinhBust, bustParts.map(p => ({
         position: [p.position[0], p.position[1] - p.size[1] / 2, p.position[2]],
         width: p.size[0], height: p.size[1], depth: p.size[2],
@@ -771,9 +775,13 @@ export class ArchitectureRenderer {
         const paintingParts = b.parts.filter(p => p.model === "banquetPainting");
         addModelInstances(group, MODEL_URLS.banquetPainting, paintingParts.map(p => ({
           position: [p.position[0], p.position[1] - p.size[1] / 2, p.position[2]],
-          width: p.size[0], height: p.size[1], depth: p.size[2],
+          width: p.size[0],
           rotationY: p.rotationY,
-        }))).catch(error => console.warn("Không tải được tranh Phòng Đại yến:", error));
+        }))).then(model => {
+          if (model) for (const child of group.children) {
+            if (child.userData.model === "banquetPaintingFallback") child.visible = false;
+          }
+        }).catch(error => console.warn("Không tải được tranh Phòng Đại yến:", error));
       }
       addModelInstances(group, MODEL_URLS.chandelier, b.chandeliers)
         .then(model => {
@@ -893,6 +901,13 @@ export class ArchitectureRenderer {
     }
   }
   update(p, distance = 112, cameraPosition = p, maxLights = 3) {
+    for (const display of this.modelDisplays) {
+      const [x, , z] = display.placement.position;
+      if (display.requested || Math.hypot(p.x - x, p.z - z) > display.loadDistance) continue;
+      display.requested = true;
+      addModelInstances(display.parent, MODEL_URLS[display.model], [display.placement])
+        .catch(error => console.warn(`Không tải được model ${display.model}:`, error));
+    }
     for (const door of this.doors) {
       const dist = Math.hypot(p.x - door.position[0], p.z - door.position[2]);
       const isNear = dist < 4.5 && Math.abs(p.y - door.position[1]) < 3.5;

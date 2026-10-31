@@ -1,6 +1,7 @@
 import { LANDMARKS } from "./landmarks.mjs";
 import { mausoleumExterior, governmentExterior } from "./facades.mjs";
 import { makePagoda, makeDrum } from "./exhibits.mjs";
+import { makeTankExhibit } from "./tank-exhibit.mjs";
 
 // Các cấu kiện dùng chung cho hiển thị và va chạm, đơn vị mét trong bản mô phỏng.
 // Bố trí phòng được rút gọn để tham quan, không phải bản vẽ hoàn công.
@@ -666,15 +667,18 @@ function makePalace(l) {
   }
 
   // Tủ gỗ thấp, tranh phong cảnh lớn ở đầu phòng.
-  b.add(0, 16, -13.25, 12.2, 0.92, 0.56, "darkwood", false);
-  b.add(0, 16.88, -12.94, 12.35, 0.10, 0.62, "lightwood", false);
+  b.add(0, 16, -13.10, 12.2, 0.92, 0.90, "darkwood", false);
+  b.add(0, 16.88, -13.10, 12.35, 0.10, 1.0, "lightwood", false);
+  b.parts.at(-1).model = "banquetSideboardTop";
   for (let x = -5; x <= 5; x += 2) {
-    b.add(x, 16.14, -12.94, 0.08, 0.60, 0.035, "bronze", false);
-    b.add(x + 0.72, 16.44, -12.90, 0.08, 0.08, 0.06, "goldLeaf", false);
+    b.add(x, 16.14, -12.63, 0.08, 0.60, 0.035, "bronze", false);
+    b.add(x + 0.72, 16.44, -12.60, 0.08, 0.08, 0.06, "goldLeaf", false);
   }
-  b.add(0, 17.4, -13.72, 10.8, 3.45, 0.18, "darkwood", false);
-  b.add(0, 17.52, -13.60, 10.35, 3.18, 0.035, "bronze", false);
-  b.add(0, 17.61, -13.56, 10.1, 3.0, 0.055, "darkwood", false, "collision");
+  // The GLB includes its own frame AND both vases. Its lowest points are the
+  // vase feet: rest them on the sideboard and preserve the scan's 3D proportions.
+  b.add(0, 17.42, -13.50, 10.1, 2.82, 0.04, "darkwood", false);
+  b.parts.at(-1).model = "banquetPaintingFallback";
+  b.add(0, 16.98, -13.10, 10.1, 3.26, 0.79, "darkwood", false, "collision");
   b.parts.at(-1).model = "banquetPainting";
 
   // Tủ trưng bày và bình sứ xanh trắng đặt cân xứng dọc hai vách.
@@ -1024,6 +1028,7 @@ export const BUILDINGS = LANDMARKS.map((l) =>
     government: makeGovernment,
     pagoda: (l) => makePagoda(l, makeBuilding),
     drum: (l) => makeDrum(l, makeBuilding),
+    tank: (l) => makeTankExhibit(l, makeBuilding),
   })[l.id](l),
 );
 export const ROOMS = BUILDINGS.flatMap((b) =>
@@ -1105,7 +1110,7 @@ export function findRoom(p) {
 export function isInsideBuilding(p) {
   return BUILDINGS.some(
     (b) =>
-      Math.abs(p.x - b.x) < (b.id === "mausoleum" ? 13 : 30) &&
+      !b.outdoor && Math.abs(p.x - b.x) < (b.id === "mausoleum" ? 13 : 30) &&
       Math.abs(p.z - b.z) < 14 &&
       p.y < 25,
   );
