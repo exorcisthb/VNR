@@ -96,33 +96,26 @@ export function mausoleumExterior(b, floor) {
   // =========================================================================
   // CỘT CỜ TRUNG TÂM QUẢNG TRƯỜNG BA ĐÌNH (CỘT CỜ LĂNG BÁC - LỄ THƯỢNG CỜ)
   // =========================================================================
-  // Low granite steps, a dressed stone pedestal and a bolted metal pole socket.
-  for (const [width, y] of [[6.2, 3], [5.7, 3.16], [5.2, 3.32]]) {
-    b.add(0, y, 32, width, 0.16, width, 'granite');
-    b.add(0, y + 0.135, 32, width + 0.04, 0.025, width + 0.04, 'mausPolished', false);
-    // Fine joints between stone slabs, kept flush with the tread.
-    for (const side of [-1, 1])
-      b.add(side * 1.35, y + 0.161, 32, 0.018, 0.006, width, 'mausStone', false);
-  }
-  b.add(0, 3.48, 32, 2.15, 0.72, 2.15, 'mausStone');
-  b.add(0, 4.2, 32, 2.3, 0.12, 2.3, 'mausPolished');
-  b.add(0, 4.32, 32, 1.05, 0.10, 1.05, 'palaceMetal', false);
-  b.add(0, 4.42, 32, 0.72, 0.43, 0.72, 'civicWhite', false, 'cylinder');
-  for (const y of [4.42, 4.76])
-    b.add(0, y, 32, 0.82, 0.055, 0.82, 'palaceMetal', false, 'cylinder');
-  for (const dx of [-0.4, 0.4]) for (const dz of [-0.4, 0.4]) {
-    b.add(dx, 4.42, 32 + dz, 0.075, 0.07, 0.075, 'palaceMetal', false, 'cylinder');
-    b.add(dx, 4.49, 32 + dz, 0.11, 0.035, 0.11, 'civicWhite', false, 'cylinder');
+  // Public Ba Dinh ceremony photos show a low, broad rectangular platform.
+  // Adjacent slabs meet at their edges; no coplanar decorative overlays.
+  b.add(0, 3, 32, 9.0, 0.16, 6.0, 'granite');
+  b.add(0, 3.16, 32, 8.6, 0.20, 5.6, 'mausStone');
+  b.add(0, 3.36, 32, 8.6, 0.08, 5.6, 'mausPolished');
+  b.add(0, 3.44, 32, 0.9, 0.07, 0.9, 'palaceMetal', false);
+  b.add(0, 3.51, 32, 0.6, 0.14, 0.6, 'civicWhite', false, 'cylinder');
+  for (const side of [-1, 1]) {
+    b.add(0, 3.44, 32 + side * 2.55, 8.2, 0.12, 0.18, 'ochre', false);
+    b.add(side * 4.01, 3.44, 32, 0.18, 0.12, 4.92, 'ochre', false);
   }
   // Thân cột cờ trắng cao vút gần 30 mét
-  b.add(0, 4.85, 32.0, 0.42, 10.0, 0.42, 'civicWhite', false, 'cylinder');
+  b.add(0, 3.65, 32.0, 0.42, 11.2, 0.42, 'civicWhite', false, 'cylinder');
   b.add(0, 14.85, 32.0, 0.32, 12.0, 0.32, 'civicWhite', false, 'cylinder');
   // Đỉnh búp đồng / quả cầu đồng
   b.add(0, 26.85, 32.0, 0.65, 0.75, 0.65, 'bronze', false, 'sphere');
   // Đại kỳ Tổ quốc đỏ sao vàng bay phấp phới trên đỉnh cột cờ trung tâm
   b.label('', 2.3, 23.5, 32.0, 4.6, 3.1, 'national-flag');
   // Discreet ground-mounted uplights outside the steps.
-  for (const dx of [-3.45, 3.45]) {
+  for (const dx of [-4.8, 4.8]) {
     for (const dz of [-3.45, 3.45]) {
       b.add(dx, 3.02, 32 + dz, 0.34, 0.12, 0.34, 'palaceMetal', false, 'cylinder');
       b.add(dx, 3.14, 32 + dz, 0.22, 0.025, 0.22, 'lamp', false, 'cylinder');

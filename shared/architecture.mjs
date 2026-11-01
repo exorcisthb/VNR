@@ -2,6 +2,7 @@ import { LANDMARKS } from "./landmarks.mjs";
 import { mausoleumExterior, governmentExterior, palaceExterior } from "./facades.mjs";
 import { makePagoda, makeDrum } from "./exhibits.mjs";
 import { makeTankExhibit } from "./tank-exhibit.mjs";
+import { governmentPublicInteriors } from "./government-interiors.mjs";
 
 // Các cấu kiện dùng chung cho hiển thị và va chạm, đơn vị mét trong bản mô phỏng.
 // Bố trí phòng được rút gọn để tham quan, không phải bản vẽ hoàn công.
@@ -114,6 +115,21 @@ function makeBuilding(l) {
         run,
         "granite",
       );
+    if (!["pagoda", "drum"].includes(l.id)) {
+      const length = count * run;
+      for (const side of [-1, 1]) {
+        const rx = x + side * (width / 2 + 0.08);
+        const handrail = b.add(rx, base + rise / 2 + 1.1, z + length / 2,
+          0.09, 0.08, Math.hypot(length, rise), "bronze", false);
+        handrail.rotationX = Math.atan2(rise, length);
+        for (let i = 0; i < count; i++) {
+          const zz = z + (count - i - 0.5) * run;
+          const top = base + rise * (i + 1) / count;
+          b.add(rx, top, zz, 0.06, 1.1, 0.06, "bronze", false);
+          b.add(rx, top, zz, 0.16, 1.8, run, "granite", true, "collision");
+        }
+      }
+    }
   };
   b.light = (x, y, z, color = "#fff1d9", intensity = 20) =>
     b.lights.push({
@@ -257,12 +273,24 @@ function upperSlab(b, y, width, depth, stairX) {
   b.add(stairX, y, (-depth / 2 - 4) / 2, 3.8, 0.26, depth / 2 - 4, "marble");
   b.add(stairX, y, (8 + depth / 2) / 2, 3.8, 0.26, depth / 2 - 8, "marble");
 
-  // Lan can an toàn tầng trên dọc giếng thang: chống rơi xuống giếng thang từ bên sàn
-  b.add(stairX + 1.9, y + 0.88, 2, 0.08, 0.06, 12, "wood", false);
-  b.add(stairX + 1.9, y + 0.08, 2, 0.05, 0.04, 12, "bronze", false);
-  for (let z = -3.5; z <= 7.5; z += 1.0)
-    b.add(stairX + 1.9, y, z, 0.032, 0.86, 0.032, "bronze", false);
-  b.add(stairX + 1.9, y, 2, 0.25, 2.5, 12, "marble", true, "collision");
+  // Guard every exposed edge; leave a central opening at the stair's upper landing.
+  const deck = y + 0.26;
+  const rail = (cx, cz, w, d) => {
+    b.add(cx, deck + 1.12, cz, w, 0.09, d, "wood", false);
+    b.add(cx, deck + 0.12, cz, w, 0.05, d, "bronze", false);
+    const length = Math.max(w, d), count = Math.ceil(length / 0.2);
+    for (let i = 0; i <= count; i++) {
+      const t = i / count - 0.5;
+      b.add(cx + (w > d ? t * w : 0), deck, cz + (d > w ? t * d : 0),
+        0.045, 1.12, 0.045, "bronze", false);
+    }
+    b.add(cx, deck, cz, Math.max(w, 0.18), 2.5, Math.max(d, 0.18), "marble", true, "collision");
+  };
+  for (const side of [-1, 1]) {
+    rail(stairX + side * 1.9, 2, 0.09, 12);
+    rail(stairX + side * 1.55, -4, 0.7, 0.09);
+  }
+  rail(stairX, 8, 3.8, 0.09);
 }
 function ceiling(b, y, w, d) {
   b.add(0, y, 0, w, 0.22, d, "ivory");
@@ -520,9 +548,11 @@ function makePalace(l) {
     for (const z of [-6, 2]) b.add(x, f, z, 0.1, 0.78, 0.1, "bronze", false);
   for (let z = -12; z <= 12; z += 4)
     b.add(29.7, f + 0.65, z, 0.16, 4.7, 0.5, "drape", false);
-  for (const x of [21.6, 27])
-    for (let z = -7; z <= 3; z += 2)
-      chair(b, x, f, z, x < 24 ? -Math.PI / 2 : Math.PI / 2, "leather");
+  for (let i = 0; i < 20; i++) {
+    const angle = i * Math.PI * 2 / 20;
+    const dx = 3.12 * Math.cos(angle), dz = 6.8 * Math.sin(angle);
+    chair(b, 24.3 + dx, f, -2 + dz, Math.atan2(dx, dz), "leather");
+  }
 
   // Đèn chùm Phòng Nội các; dãy đèn sảnh chính đã được đặt ở trên.
   for (const z of [-8, -3, 1])
@@ -624,12 +654,36 @@ function makePalace(l) {
   // Đèn chùm pha lê tráng lệ giữa phòng Trình Quốc thư
   b.chandelier(0, 15.65, -5.0, 2.0, 1.4);
   b.light(0, 14.2, -5.0, "#fff5da", 28);
-  table(b, 24, 10, -4, 3, 1.6);
-  chair(b, 24, 10, -5.2, Math.PI, "leather");
-  chair(b, 23.2, 10, -2.8, 0, "leather");
-  chair(b, 24.8, 10, -2.8, 0, "leather");
-  sofa(b, 24, 10, 5);
-  b.label("PHÒNG LÀM VIỆC", 24, 13, 13.8, 8, 0.6);
+  // Presidential office: public museum photograph shows a large wooden desk,
+  // red upholstered chair, three telephones and a landscape behind the desk.
+  b.add(24, 10.01, -0.5, 10.5, 0.025, 22, "carpet", false);
+  table(b, 24, 10, -5.5, 4.4, 1.75, "walnut");
+  b.add(24, 10.1, -4.68, 4.1, 0.55, 0.12, "woodpanel", false);
+  b.add(24, 10.78, -5.5, 2.2, 0.025, 1.0, "leather", false);
+  chair(b, 24, 10, -6.9, Math.PI, "curtainRed");
+  b.add(24, 10.95, -7.12, 0.8, 0.6, 0.14, "curtainRed", false);
+  for (let i = 0; i < 3; i++) {
+    const px = 25.0 + i * 0.36;
+    const mat = i === 0 ? "curtainRed" : "ivory";
+    b.add(px, 10.8, -5.75, 0.3, 0.12, 0.26, mat, false);
+    b.add(px, 10.93, -5.75, 0.35, 0.06, 0.10, mat, false);
+    b.add(px, 10.93, -5.67, 0.10, 0.025, 0.10, "bronze", false, "cylinder");
+  }
+  for (let x = 19.5; x < 29; x += 0.3)
+    b.add(x, 10, -13.55, 0.17, 1.4, 0.1, "woodpanel", false);
+  b.add(24, 11.6, -13.55, 8.8, 3.4, 0.12, "walnut", false);
+  b.label("Phong cảnh sau bàn làm việc", 24, 13.25, -13.46, 8.4, 3.0, "landscape");
+  for (const x of [21.5, 26.5]) {
+    sofa(b, x, 10, 4, x < 24 ? -Math.PI / 2 : Math.PI / 2, "curtainRed");
+    table(b, x < 24 ? 22.9 : 25.1, 10, 4, 0.9, 2.6, "walnut");
+  }
+  b.add(28.7, 10, -9.8, 0.45, 2.0, 4.5, "walnut");
+  for (const z of [-11.2, -9.8, -8.4])
+    b.add(28.44, 10.9, z, 0.04, 0.05, 0.4, "bronze", false);
+  b.chandelier(24, 15.65, 1, 1.45, 1.05);
+  b.label("PHÒNG LÀM VIỆC TỔNG THỐNG", 24, 13.8, 13.8, 9.8, 0.6);
+  b.room("president-office", "Phòng làm việc Tổng thống", 19, -12, 29, 11, 10,
+    "Dựng theo ảnh phòng làm việc do Di tích Dinh Độc Lập công bố: bàn gỗ lớn, ghế bọc đỏ, ba điện thoại, ốp gỗ và tranh phong cảnh. Vị trí, tỷ lệ được rút gọn cho tham quan.", PALACE_SOURCE);
   // Phòng Đại yến: bàn hội nghị dài, một dãy ghế bọc nâu ở mỗi bên.
   const banquetTableZ = -0.35;
   table(b, 0, 16, banquetTableZ, 3.0, 17.4, "walnut");
@@ -916,58 +970,7 @@ function makeGovernment(l) {
     sofa(b, x, f, 10);
     table(b, x, f, 8.3, 2.4, 1);
   }
-  // Các tầng trên là không gian văn phòng làm việc mẫu và phòng tiếp khách Trụ sở Chính phủ
-  for (const y of [9, 14]) {
-    for (const x of [-17, 17]) b.add(x, y, -5, 0.25, 4.7, 17, "ivory");
-
-    // Khu vực bàn làm việc lãnh đạo / chuyên viên cao cấp
-    for (const x of [-10, 10]) {
-      for (const z of [-6, 2]) {
-        // Bàn làm việc gỗ óc chó cao cấp
-        table(b, x, y, z, 2.6, 1.4, "walnut");
-        // Ghế xoay lãnh đạo bọc da cao cấp quay mặt về phía bàn làm việc (rotation = Math.PI)
-        chair(b, x, y, z - 0.95, Math.PI, "leather");
-        // Một ghế khách đối diện bàn làm việc quay mặt vào bàn ngay ngắn, không thừa ghế
-        chair(b, x, y, z + 0.95, 0, "upholstery");
-
-        // Màn hình máy tính để bàn có chân đế đặt vững trên mặt bàn, quay về phía ghế lãnh đạo
-        b.add(x, y + 0.76, z + 0.15, 0.24, 0.02, 0.18, "darkwood", false);
-        b.add(x, y + 0.78, z + 0.15, 0.05, 0.20, 0.05, "bronze", false);
-        b.add(x, y + 0.88, z + 0.15, 0.72, 0.42, 0.04, "screen", false);
-
-        // Bàn phím máy tính ngay ngắn trước màn hình
-        b.add(x, y + 0.75, z - 0.22, 0.46, 0.015, 0.16, "darkwood", false);
-        // Khay tài liệu văn phòng phẩm
-        b.add(x + 0.9, y + 0.75, z, 0.28, 0.06, 0.35, "ivory", false);
-
-        // Tủ tài liệu gỗ lưu trữ hồ sơ phía sau bàn làm việc
-        b.add(x, y, z - 3.2, 2.8, 2.3, 0.45, "darkwood", true);
-        b.add(x, y + 0.85, z - 2.96, 2.6, 0.04, 0.04, "goldLeaf", false);
-
-        // Chậu cây cảnh văn phòng tươi xanh
-        const px = x < 0 ? x - 4.5 : x + 4.5;
-        b.add(px, y, z, 0.55, 0.55, 0.55, "ivory", true);
-        b.add(px, y + 0.55, z, 0.70, 0.80, 0.70, "greenery", false, "sphere");
-
-        // Đèn trần văn phòng chiếu sáng ấm cúng
-        b.add(x, y + 4.62, z, 2.8, 0.08, 2.0, "lamp", false);
-        b.light(x, y + 4.2, z, "#fff8e7", 22);
-      }
-    }
-
-    // Khu vực sofa tiếp khách trung tâm tầng
-    b.add(0, y + 0.01, 8, 8, 0.02, 6, "carpet", false);
-    sofa(b, 0, y, 10);
-    table(b, 0, y, 8, 2.2, 1.1, "walnut");
-    chair(b, -1.8, y, 8, -Math.PI / 2, "leather");
-    chair(b, 1.8, y, 8, Math.PI / 2, "leather");
-    b.add(-3.2, y, 10, 0.55, 0.55, 0.55, "ivory", true);
-    b.add(-3.2, y + 0.55, 10, 0.70, 0.80, 0.70, "greenery", false, "sphere");
-    b.add(3.2, y, 10, 0.55, 0.55, 0.55, "ivory", true);
-    b.add(3.2, y + 0.55, 10, 0.70, 0.80, 0.70, "greenery", false, "sphere");
-    b.add(0, y + 4.62, 8, 3.2, 0.08, 2.2, "lamp", false);
-    b.light(0, y + 4.2, 8, "#fff8e7", 25);
-  }
+  governmentPublicInteriors(b, { chair, sofa, table });
   b.room(
     "meeting",
     "Phòng họp Chính phủ · mô phỏng",
@@ -990,23 +993,6 @@ function makeGovernment(l) {
     "Sảnh, ghế tiếp khách và hành lang là bố trí minh họa để đi lại trong game, không khẳng định giống vị trí thực tế.",
     GOV_SOURCE,
   );
-  b.room(
-    "office",
-    "Không gian làm việc · minh họa",
-    -17,
-    -12,
-    17,
-    12,
-    9,
-    "Phòng làm việc mẫu với bàn ghế và màn hình, được bố trí hư cấu phục vụ trải nghiệm tham quan.",
-    GOV_SOURCE,
-  );
-  b.rooms.at(-1).spawn = {
-    x: l.x + 5,
-    y: 9.025,
-    z: l.z + 8 * l.front,
-    yaw: Math.PI,
-  };
   for (const y of [7.8, 12.8, 17.8])
     for (const x of [-10, 10]) b.light(x, y, -1, "#fff0d8", 32);
   return b;

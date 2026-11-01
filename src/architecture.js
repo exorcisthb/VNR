@@ -166,7 +166,22 @@ function labelTexture(label) {
     canvas.width = ["lacquer", "banquetPainting"].includes(label.kind) ? 2048 : 1024;
     canvas.height = label.kind === "lacquer" ? 768 : label.kind === "banquetPainting" ? 640 : label.kind === "landscape" ? 384 : 160;
     const c = canvas.getContext("2d");
-    if (label.kind === "helipad") {
+    if (label.kind === "dashboard") {
+      canvas.width = 1440; canvas.height = 480;
+      c.fillStyle = '#102b45'; c.fillRect(0, 0, 1440, 480);
+      c.fillStyle = '#e2c486'; c.font = 'bold 38px Arial';
+      c.fillText(label.text, 40, 56);
+      c.fillStyle = '#aac7d8'; c.font = '22px Arial';
+      c.fillText('SƠ ĐỒ MINH HỌA KHÔNG GIAN HỘI NGHỊ', 40, 94);
+      for (let col = 0; col < 3; col++) {
+        const x = 40 + col * 460;
+        c.fillStyle = '#183e5c'; c.fillRect(x, 128, 430, 300);
+        for (let row = 0; row < 5; row++) {
+          c.fillStyle = '#7ea9be'; c.fillRect(x + 24, 154 + row * 47, 120, 8);
+          c.fillStyle = '#c5a164'; c.fillRect(x + 175, 146 + row * 47, 65 + (row + col) % 4 * 38, 24);
+        }
+      }
+    } else if (label.kind === "helipad") {
       canvas.width = canvas.height = 512;
       c.fillStyle = "#626b63";
       c.fillRect(0, 0, 512, 512);
@@ -768,7 +783,7 @@ export class ArchitectureRenderer {
               l.kind === "gov-title" ||
               l.kind === "mausoleum-title" ||
               l.kind === "national-emblem",
-            side: THREE.DoubleSide,
+            side: l.kind === "sign" ? THREE.FrontSide : THREE.DoubleSide,
             polygonOffset: true,
             polygonOffsetFactor: -1,
           }),
@@ -777,6 +792,16 @@ export class ArchitectureRenderer {
         mesh.rotation.y = l.rotationY;
         if (l.kind === "helipad") mesh.rotation.x = -Math.PI / 2;
         group.add(mesh);
+        if (l.kind === "sign") {
+          // Each face has its own orientation so text reads normally from either side.
+          const back = mesh.clone();
+          const normal = new THREE.Vector3(Math.sin(l.rotationY), 0, Math.cos(l.rotationY));
+          mesh.position.addScaledVector(normal, 0.012);
+          back.position.addScaledVector(normal, -0.012);
+          back.rotation.y += Math.PI;
+          group.add(back);
+          signs.push(back);
+        }
         if (l.kind === "sign") signs.push(mesh);
       }
       for (const light of b.lights) {
