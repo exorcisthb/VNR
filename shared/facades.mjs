@@ -78,9 +78,9 @@ export function mausoleumExterior(b, floor) {
     b.add(px, 12.4, 19.5, 0.28, 0.28, 0.28, 'bronze', false, 'sphere');
     b.label('', px + 1.05, 11.2, 19.5, 2.1, 1.4, i % 2 === 0 ? 'national-flag' : 'party-flag');
   }
-  // Bồn hoa cây cảnh xanh và thảm hoa tươi trước Khán đài A
-  b.add(-32.5, 3.0, 23.1, 22.6, 0.45, 0.6, 'civicRoof');
-  b.add(-32.5, 3.45, 23.1, 22.4, 0.25, 0.5, 'lotusPink');
+  // Bồn hoa cây cảnh xanh và thảm hoa tươi trước Khán đài A (đặt liền sát mặt đất)
+  b.add(-32.5, 3.0, 22.65, 22.6, 0.45, 0.35, 'civicRoof', false);
+  b.add(-32.5, 2.95, 23.2, 22.4, 0.32, 0.5, 'lotusPink', false);
   // Trụ panô cờ lễ hội đỏ thắm bên cánh trái
   b.add(-18.5, 3.0, 22.5, 1.6, 6.2, 0.15, 'mausRed', false);
   b.add(-18.5, 3.0, 22.5, 1.8, 0.3, 0.4, 'granite');
@@ -98,9 +98,9 @@ export function mausoleumExterior(b, floor) {
     b.add(px, 12.4, 19.5, 0.28, 0.28, 0.28, 'bronze', false, 'sphere');
     b.label('', px + 1.05, 11.2, 19.5, 2.1, 1.4, i % 2 === 0 ? 'party-flag' : 'national-flag');
   }
-  // Bồn hoa cây cảnh xanh và thảm hoa tươi trước Khán đài B
-  b.add(32.5, 3.0, 23.1, 22.6, 0.45, 0.6, 'civicRoof');
-  b.add(32.5, 3.45, 23.1, 22.4, 0.25, 0.5, 'lotusPink');
+  // Bồn hoa cây cảnh xanh và thảm hoa tươi trước Khán đài B (đặt liền sát mặt đất)
+  b.add(32.5, 3.0, 22.65, 22.6, 0.45, 0.35, 'civicRoof', false);
+  b.add(32.5, 2.95, 23.2, 22.4, 0.32, 0.5, 'lotusPink', false);
   // Trụ panô cờ lễ hội đỏ thắm bên cánh phải
   b.add(18.5, 3.0, 22.5, 1.6, 6.2, 0.15, 'mausRed', false);
   b.add(18.5, 3.0, 22.5, 1.8, 0.3, 0.4, 'granite');
