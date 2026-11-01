@@ -810,8 +810,10 @@ export class ArchitectureRenderer {
         // Place one complete pair per row, using its original proportions.
         const guardRows = [...new Set(honorGuardParts.map(p => p.position[2]))];
         addModelInstances(group, MODEL_URLS.honorGuard, guardRows.map(z => ({
-          position: [b.x, 4.2, z],
+          position: [b.x, 4.2, z + (z === Math.max(...guardRows) ? 0.75 * b.front : 0)],
+          width: 5.1,
           height: 2.8,
+          depth: 0.6,
           rotationY: b.front === -1 ? Math.PI : 0,
         }))).then(model => {
           if (model) for (const child of group.children) {

@@ -1867,3 +1867,81 @@ h1 {
     font-size: 7px;
   }
 }
+
+/* Pause menu: warm red and earthen gold, with a prominent return action. */
+#pause {
+  background: #28100fba;
+}
+#pause .menu-card {
+  color: #fff3dc;
+  background: linear-gradient(145deg, #722d28, #481e1c);
+  border: 1px solid #c49a55;
+  box-shadow: 0 24px 80px #210c0ca6;
+  scrollbar-width: thin;
+  scrollbar-color: #bd955a #481e1c;
+}
+#pause .menu-card :is(.eyebrow, .tour-label),
+#pause .menu-card > label[for="room-select"] {
+  color: #e2ba76;
+}
+#pause .menu-card p { color: #f1dfc4; }
+#pause .menu-card small { color: #d7bb94; }
+#pause .menu-card #overview-map {
+  background: #582a25;
+  border-color: #bd955a80;
+}
+#pause .menu-card select,
+#pause .menu-card .secondary,
+#pause .tour-buttons button {
+  background: #70352d;
+  color: #fff1d5;
+  border: 1px solid #c49a5580;
+  border-radius: 6px;
+}
+#pause .menu-card select { color-scheme: dark; }
+#pause .tour-buttons button:hover,
+#pause .menu-card .secondary:hover {
+  background: #8c4435;
+  border-color: #e2ba76;
+}
+#pause .menu-card :is(button, select, input, a):focus-visible {
+  outline: 3px solid #f0cc86;
+  outline-offset: 3px;
+}
+#pause .menu-card input { accent-color: #c49a55; }
+#pause .source-panel {
+  background: #49211f;
+  border-color: #c49a5580;
+}
+#pause .source-panel strong { color: #ffe4b0; }
+#pause .source-panel a { color: #ebbd70; }
+#pause .menu-card #resume {
+  width: 100%;
+  min-height: 62px;
+  margin-top: 20px;
+  padding: 16px 22px;
+  background: linear-gradient(135deg, #dec088, #b88a43);
+  border: 2px solid #f0d49b;
+  border-radius: 10px;
+  color: #491e1a;
+  font-size: clamp(17px, 2.5vw, 20px);
+  font-weight: 800;
+  line-height: 1.4;
+  box-shadow: 0 5px 0 #6b4024, 0 9px 20px #230d0d55;
+  transition: background 150ms, transform 150ms;
+}
+#pause .menu-card #resume:hover {
+  background: #efd19a;
+  transform: translateY(-1px);
+}
+#pause .menu-card #resume:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #6b4024;
+}
+#pause .menu-card::-webkit-scrollbar { width: 9px; }
+#pause .menu-card::-webkit-scrollbar-track { background: #481e1c; }
+#pause .menu-card::-webkit-scrollbar-thumb {
+  background: #bd955a;
+  border: 2px solid #481e1c;
+  border-radius: 8px;
+}

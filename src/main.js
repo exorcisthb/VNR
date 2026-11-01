@@ -860,7 +860,7 @@ function drawMap(c) {
     s = Math.min(w, h) / 305,
     ox = w / 2,
     oz = h / 2;
-  g.fillStyle = "#244b3c";
+  g.fillStyle = "#582a25";
   g.fillRect(0, 0, w, h);
   const X = (x) => ox + x * s,
     Z = (z) => oz + z * s;
@@ -883,7 +883,7 @@ function drawMap(c) {
   g.moveTo(X(tank.x), Z(20));
   g.lineTo(X(tank.x), Z(tank.z + 10));
   g.stroke();
-  g.fillStyle = "#739c96";
+  g.fillStyle = "#aa7949";
   g.beginPath();
   g.ellipse(X(66), Z(53), 18 * s, 12 * s, 0, 0, 7);
   g.fill();
@@ -895,7 +895,7 @@ function drawMap(c) {
       (b.approach ? 20 : b.id === "mausoleum" ? 42 : 62) * s,
       (b.approach ? 20 : 34) * s,
     );
-    g.fillStyle = "#17392d";
+    g.fillStyle = "#582a25";
     g.font = "bold " + Math.max(9, 14 * s) + "px Arial";
     g.textAlign = "center";
     g.fillText(String(i + 1), X(b.x), Z(b.z) + 4);
