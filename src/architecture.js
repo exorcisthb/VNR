@@ -806,11 +806,14 @@ export class ArchitectureRenderer {
         }
       }).catch(error => console.warn("Không tải được model thi hài Bác:", error));
       if (b.id === "mausoleum") {
-        addModelInstances(group, MODEL_URLS.honorGuard, honorGuardParts.map(p => ({
-          position: [p.position[0], p.position[1] - p.size[1] / 2, p.position[2]],
-          width: p.size[0], height: p.size[1], depth: p.size[2],
-          rotationY: p.rotationY + (p.front === -1 ? Math.PI : 0),
-        })), [0, 0, Math.PI / 2]).then(model => {
+        // The scan already contains two upright guards separated along X.
+        // Place one complete pair per row, using its original proportions.
+        const guardRows = [...new Set(honorGuardParts.map(p => p.position[2]))];
+        addModelInstances(group, MODEL_URLS.honorGuard, guardRows.map(z => ({
+          position: [b.x, 4.2, z],
+          height: 2.8,
+          rotationY: b.front === -1 ? Math.PI : 0,
+        }))).then(model => {
           if (model) for (const child of group.children) {
             if (child.userData.shape === "honorGuard") child.visible = false;
           }

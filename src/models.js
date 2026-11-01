@@ -61,8 +61,9 @@ export async function addModelInstances(parent, url, placements, modelRotation =
     placements.forEach((p, i) => {
       transform.position.fromArray(p.position);
       transform.rotation.set(0, p.rotationY || 0, 0);
-      transform.scale.set(p.width, p.height == null ? p.width : p.height / model.size.y,
-        p.depth == null ? p.width : p.depth / model.size.z);
+      const width = p.width ?? p.height / model.size.y;
+      transform.scale.set(width, p.height == null ? width : p.height / model.size.y,
+        p.depth == null ? width : p.depth / model.size.z);
       transform.updateMatrix();
       mesh.setMatrixAt(i, transform.matrix);
     });
