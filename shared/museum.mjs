@@ -23,7 +23,6 @@ export function addMuseumGallery(b) {
   // Clear, continuous paved route from the mausoleum forecourt to the museum door.
   b.add(-31, 3.005, 17, 28, 0.035, 3.4, 'pavers', false);
   b.add(cx, 3.005, 12.5, 3.4, 0.035, 9, 'pavers', false);
-  b.label('← BẢO TÀNG HỒ CHÍ MINH', -19.8, 5.0, 18, 9, 0.65);
   // Entrance orientation panel gives the real-world relationship explicitly.
   label('BẢO TÀNG TRONG CỤM DI TÍCH BA ĐÌNH\nBảo tàng Hồ Chí Minh là công trình riêng tại 19 Ngọc Hà.\nPhòng này là không gian trưng bày mô phỏng trong game.\nẢnh: Bảo tàng Hồ Chí Minh · baotanghochiminh.vn', 7.5, 5.25, 11.8, 8.5, 2, 'museum-panel');
   b.labels.at(-1).rotationY += Math.PI;
