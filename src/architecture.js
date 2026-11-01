@@ -513,6 +513,39 @@ function labelTexture(label) {
         c.fillText(lines[0], targetW / 2, targetH * 0.24);
         c.font = `600 ${Math.round(targetH * 0.43)}px 'Segoe UI', Arial, sans-serif`;
         c.fillText(lines[1], targetW / 2, targetH * 0.72);
+      } else if (label.kind === "slogan-stand") {
+        // Khẩu hiệu Quảng trường Ba Đình hai bên Lăng Bác: Chữ đỏ trên phông xanh ngọc nhạt trang trọng
+        const bgGrad = c.createLinearGradient(0, 0, 0, targetH);
+        bgGrad.addColorStop(0, "#dff5f1");
+        bgGrad.addColorStop(0.5, "#c8ede7");
+        bgGrad.addColorStop(1, "#b2e3dc");
+        c.fillStyle = bgGrad;
+        c.fillRect(0, 0, targetW, targetH);
+
+        // Khung viền vàng đồng và chỉ trắng trang nhã
+        c.strokeStyle = "#c59a38";
+        c.lineWidth = Math.max(4, Math.round(targetH * 0.05));
+        c.strokeRect(4, 4, targetW - 8, targetH - 8);
+        c.strokeStyle = "#ffffff";
+        c.lineWidth = Math.max(2, Math.round(targetH * 0.02));
+        c.strokeRect(10, 10, targetW - 20, targetH - 20);
+
+        // Chữ đỏ cờ rực rỡ, trang nghiêm, đậm nét
+        const fontSize = Math.min(
+          Math.round(targetH * 0.55),
+          Math.round(((targetW * 0.94) / label.text.length) * 1.65),
+        );
+        c.font = `900 ${fontSize}px 'Be Vietnam Pro', 'Segoe UI', Arial, sans-serif`;
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+
+        // Đổ bóng chữ
+        c.fillStyle = "rgba(0, 0, 0, 0.22)";
+        c.fillText(label.text, targetW / 2 + 2, targetH / 2 + 3);
+
+        // Chữ đỏ cờ rực rỡ
+        c.fillStyle = "#c8102e";
+        c.fillText(label.text, targetW / 2, targetH / 2);
       } else if (isGov) {
         // Chữ hội trường Trụ sở Chính phủ: Chữ mạ vàng sáng bóng trên phông gỗ trang trọng
         c.clearRect(0, 0, targetW, targetH);

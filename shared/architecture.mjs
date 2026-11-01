@@ -1053,17 +1053,17 @@ function makeCollisionBarrier(x, y, z, w, h, d, id = "lotus-pier") {
 }
 
 const LOTUS_PIER_BARRIERS = [
-  // Lan can hai bên cầu gỗ dẫn ra giữa đầm sen (x=66, z=39..50) - cao 6m ngăn hoàn toàn nhảy hoặc rơi
-  makeCollisionBarrier(64.75, 5.0, 44.5, 0.50, 6.0, 11.4),
-  makeCollisionBarrier(67.25, 5.0, 44.5, 0.50, 6.0, 11.4),
+  // Lan can hai bên cầu gỗ dẫn ra giữa đầm sen (x=66, z=40.5..50) - cân đối đối xứng 2 bên trục x=66
+  makeCollisionBarrier(63.95, 5.0, 45.25, 0.40, 6.0, 9.6),
+  makeCollisionBarrier(68.05, 5.0, 45.25, 0.40, 6.0, 9.6),
   // Lan can chuyển tiếp mở rộng tại đầu chòi ngắm sen (z=50)
-  makeCollisionBarrier(64.25, 5.0, 50.0, 1.20, 6.0, 0.50),
-  makeCollisionBarrier(67.75, 5.0, 50.0, 1.20, 6.0, 0.50),
-  // Lan can hai bên mép chòi ngắm sen (x=63.8 và x=68.2, z=50..54.3)
-  makeCollisionBarrier(63.75, 5.0, 52.1, 0.50, 6.0, 4.6),
-  makeCollisionBarrier(68.25, 5.0, 52.1, 0.50, 6.0, 4.6),
-  // Lan can chắn mép trước mặt nước chòi ngắm sen (z=54.3)
-  makeCollisionBarrier(66.00, 5.0, 54.3, 5.20, 6.0, 0.50),
+  makeCollisionBarrier(63.55, 5.0, 50.0, 0.90, 6.0, 0.40),
+  makeCollisionBarrier(68.45, 5.0, 50.0, 0.90, 6.0, 0.40),
+  // Lan can hai bên mép chòi ngắm sen (x=63.1 và x=68.9, z=50..54.5)
+  makeCollisionBarrier(62.95, 5.0, 52.25, 0.40, 6.0, 4.6),
+  makeCollisionBarrier(69.05, 5.0, 52.25, 0.40, 6.0, 4.6),
+  // Lan can chắn mép trước mặt nước chòi ngắm sen (z=54.5)
+  makeCollisionBarrier(66.00, 5.0, 54.65, 6.00, 6.0, 0.40),
 ];
 
 // Vành đai an toàn viền quanh mép nước đầm sen (bán kính x=18, z=12 quanh tâm x=66, z=53),

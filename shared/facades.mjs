@@ -61,6 +61,82 @@ export function mausoleumExterior(b, floor) {
   b.add(0, 23.55, 0, 28.5, 0.50, 28.5, 'mausStone');
   b.add(0, 24.05, 0, 20.5, 0.50, 20.5, 'mausPolished');
   b.label('CHỦ TỊCH\nHỒ - CHÍ - MINH', 0, 22.15, 17.94, 19, 1.65, 'mausoleum-title');
+
+  // =========================================================================
+  // KHÁN ĐÀI A & B, DÃY CỘT CỜ VÀ DẢI KHẨU HIỆU HAI BÊN LĂNG BÁC (QUẢNG TRƯỜNG BA ĐÌNH)
+  // =========================================================================
+  // Khán đài A (bên trái khi nhìn vào Lăng): Khẩu hiệu "NƯỚC CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM MUÔN NĂM !"
+  b.add(-32.5, 3.0, 20.5, 23.6, 0.6, 5.0, 'mausStone');
+  b.add(-32.5, 3.6, 20.5, 23.2, 0.8, 4.4, 'mausStone');
+  b.add(-32.5, 4.4, 20.5, 22.8, 0.8, 3.8, 'mausStone');
+  b.add(-32.5, 4.2, 22.8, 22.4, 1.5, 0.25, 'granite');
+  b.label('NƯỚC CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM MUÔN NĂM !', -32.5, 4.95, 22.95, 22.2, 1.45, 'slogan-stand');
+  // Hàng 7 cột cờ Khán đài A (cờ Đảng và cờ Tổ quốc đan xen)
+  for (let i = 0; i < 7; i++) {
+    const px = -41.5 + i * 3.0;
+    b.add(px, 5.2, 19.5, 0.14, 7.2, 0.14, 'civicWhite', false, 'cylinder');
+    b.add(px, 12.4, 19.5, 0.28, 0.28, 0.28, 'bronze', false, 'sphere');
+    b.label('', px + 1.05, 11.2, 19.5, 2.1, 1.4, i % 2 === 0 ? 'national-flag' : 'party-flag');
+  }
+  // Bồn hoa cây cảnh xanh và thảm hoa tươi trước Khán đài A
+  b.add(-32.5, 3.0, 23.1, 22.6, 0.45, 0.6, 'civicRoof');
+  b.add(-32.5, 3.45, 23.1, 22.4, 0.25, 0.5, 'lotusPink');
+  // Trụ panô cờ lễ hội đỏ thắm bên cánh trái
+  b.add(-18.5, 3.0, 22.5, 1.6, 6.2, 0.15, 'mausRed', false);
+  b.add(-18.5, 3.0, 22.5, 1.8, 0.3, 0.4, 'granite');
+
+  // Khán đài B (bên phải khi nhìn vào Lăng): Khẩu hiệu "CHỦ TỊCH HỒ CHÍ MINH VĨ ĐẠI SỐNG MÃI TRONG SỰ NGHIỆP CỦA CHÚNG TA !"
+  b.add(32.5, 3.0, 20.5, 23.6, 0.6, 5.0, 'mausStone');
+  b.add(32.5, 3.6, 20.5, 23.2, 0.8, 4.4, 'mausStone');
+  b.add(32.5, 4.4, 20.5, 22.8, 0.8, 3.8, 'mausStone');
+  b.add(32.5, 4.2, 22.8, 22.4, 1.5, 0.25, 'granite');
+  b.label('CHỦ TỊCH HỒ CHÍ MINH VĨ ĐẠI SỐNG MÃI TRONG SỰ NGHIỆP CỦA CHÚNG TA !', 32.5, 4.95, 22.95, 22.2, 1.45, 'slogan-stand');
+  // Hàng 7 cột cờ Khán đài B (cờ Đảng và cờ Tổ quốc đan xen)
+  for (let i = 0; i < 7; i++) {
+    const px = 23.5 + i * 3.0;
+    b.add(px, 5.2, 19.5, 0.14, 7.2, 0.14, 'civicWhite', false, 'cylinder');
+    b.add(px, 12.4, 19.5, 0.28, 0.28, 0.28, 'bronze', false, 'sphere');
+    b.label('', px + 1.05, 11.2, 19.5, 2.1, 1.4, i % 2 === 0 ? 'party-flag' : 'national-flag');
+  }
+  // Bồn hoa cây cảnh xanh và thảm hoa tươi trước Khán đài B
+  b.add(32.5, 3.0, 23.1, 22.6, 0.45, 0.6, 'civicRoof');
+  b.add(32.5, 3.45, 23.1, 22.4, 0.25, 0.5, 'lotusPink');
+  // Trụ panô cờ lễ hội đỏ thắm bên cánh phải
+  b.add(18.5, 3.0, 22.5, 1.6, 6.2, 0.15, 'mausRed', false);
+  b.add(18.5, 3.0, 22.5, 1.8, 0.3, 0.4, 'granite');
+
+  // =========================================================================
+  // CỘT CỜ TRUNG TÂM QUẢNG TRƯỜNG BA ĐÌNH (CỘT CỜ LĂNG BÁC - LỄ THƯỢNG CỜ)
+  // =========================================================================
+  // Bệ tam cấp đá hoa cương đỏ và xám trang nghiêm
+  b.add(0, 3.0, 32.0, 5.8, 0.45, 5.8, 'granite');
+  b.add(0, 3.45, 32.0, 4.4, 0.45, 4.4, 'mausStone');
+  b.add(0, 3.90, 32.0, 3.0, 0.60, 3.0, 'mausRed');
+  b.add(0, 4.50, 32.0, 1.2, 0.35, 1.2, 'bronze', false, 'cylinder');
+  // Thân cột cờ trắng cao vút gần 30 mét
+  b.add(0, 4.85, 32.0, 0.42, 10.0, 0.42, 'civicWhite', false, 'cylinder');
+  b.add(0, 14.85, 32.0, 0.32, 12.0, 0.32, 'civicWhite', false, 'cylinder');
+  // Đỉnh búp đồng / quả cầu đồng
+  b.add(0, 26.85, 32.0, 0.65, 0.75, 0.65, 'bronze', false, 'sphere');
+  // Đại kỳ Tổ quốc đỏ sao vàng bay phấp phới trên đỉnh cột cờ trung tâm
+  b.label('', 2.3, 23.5, 32.0, 4.6, 3.1, 'national-flag');
+  // 4 cột trụ đèn đồng nghi lễ tại 4 góc chân bệ cột cờ
+  for (const dx of [-2.2, 2.2]) {
+    for (const dz of [-2.2, 2.2]) {
+      b.add(dx, 3.45, 32.0 + dz, 0.16, 1.6, 0.16, 'bronze', false);
+      b.add(dx, 5.05, 32.0 + dz, 0.38, 0.38, 0.38, 'lamp', false, 'sphere');
+    }
+  }
+
+  // Cặp trụ đèn chùm nghi lễ Ba Đình (2 bên trục duyệt binh)
+  for (const lx of [-13.0, 13.0]) {
+    b.add(lx, 3.0, 25.0, 0.7, 0.9, 0.7, 'mausStone');
+    b.add(lx, 3.9, 25.0, 0.20, 6.5, 0.20, 'bronze', false, 'cylinder');
+    b.add(lx, 9.8, 25.0, 2.2, 0.12, 0.12, 'bronze', false);
+    b.add(lx, 10.5, 25.0, 0.45, 0.45, 0.45, 'lamp', false, 'sphere');
+    b.add(lx - 1.0, 10.0, 25.0, 0.38, 0.38, 0.38, 'lamp', false, 'sphere');
+    b.add(lx + 1.0, 10.0, 25.0, 0.38, 0.38, 0.38, 'lamp', false, 'sphere');
+  }
 }
 
 export function governmentExterior(b, floor) {

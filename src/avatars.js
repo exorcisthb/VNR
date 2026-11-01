@@ -221,6 +221,50 @@ export function createCharacter(role = "student") {
     flag.castShadow = true;
     grip.add(flag);
     materials.push(flag.material);
+  } else {
+    // Sinh viên FPT: cầm cờ Tổ quốc nhỏ cầm tay (cán gỗ 0.65m, lá cờ 0.32m x 0.21m, nhỏ hơn của Host)
+    arms[1].rotation.x = 0.45;
+    arms[1].rotation.y = 0;
+    arms[1].rotation.z = -0.08;
+
+    // Bàn tay nắm chặt cán cờ nhỏ
+    part(arms[1], [0.15, 0.16, 0.16], [0, -0.59, 0], skin);
+    part(arms[1], [0.07, 0.08, 0.08], [0.05, -0.57, 0.03], skin);
+
+    const grip = new THREE.Group();
+    grip.position.set(0, -0.59, 0);
+    grip.rotation.x = -0.45;
+    grip.rotation.y = 0;
+    grip.rotation.z = 0.08;
+    arms[1].add(grip);
+
+    // Cán cờ nhỏ thanh gỗ tre
+    const miniPole = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.007, 0.007, 0.65, 8),
+      new THREE.MeshStandardMaterial({
+        color: "#d9c18f",
+        metalness: 0.2,
+        roughness: 0.7,
+      }),
+    );
+    miniPole.position.set(0, 0.28, 0);
+    miniPole.castShadow = true;
+    grip.add(miniPole);
+    materials.push(miniPole.material);
+
+    // Lá cờ nhỏ cầm tay xinh xắn (tỷ lệ 1/3 cờ Host)
+    flag = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.32, 0.21, 8, 4),
+      new THREE.MeshStandardMaterial({
+        map: flagMap,
+        side: THREE.DoubleSide,
+        roughness: 0.9,
+      }),
+    );
+    flag.position.set(0.16, 0.48, 0);
+    flag.castShadow = true;
+    grip.add(flag);
+    materials.push(flag.material);
   }
   const shadow = new THREE.Mesh(
     new THREE.CircleGeometry(0.39, 24),
@@ -355,9 +399,10 @@ export class Avatars {
           a.arms[1].rotation.y = 0;
           a.arms[1].rotation.z = -0.12;
         } else {
-          // Người tham quan vung tay phải ngược pha chân phải
-          a.arms[1].rotation.x = legSwing;
-          a.arms[1].rotation.z = 0;
+          // Sinh viên FPT cầm cờ nhỏ cầm tay phía trước, đung đưa nhẹ theo nhịp bước chân
+          a.arms[1].rotation.x = 0.45 + legSwing * 0.18;
+          a.arms[1].rotation.y = 0;
+          a.arms[1].rotation.z = -0.08;
         }
       } else {
         // Đứng yên: thả lỏng dần về tư thế đứng ban đầu
@@ -372,18 +417,22 @@ export class Avatars {
           a.arms[1].rotation.z = -0.12;
           a.arms[1].rotation.y = 0;
         } else {
-          a.arms[1].rotation.x = THREE.MathUtils.lerp(a.arms[1].rotation.x, 0, Math.min(1, dt * 10));
-          a.arms[1].rotation.z = THREE.MathUtils.lerp(a.arms[1].rotation.z, 0, Math.min(1, dt * 10));
+          a.arms[1].rotation.x = THREE.MathUtils.lerp(a.arms[1].rotation.x, 0.45, Math.min(1, dt * 10));
+          a.arms[1].rotation.z = THREE.MathUtils.lerp(a.arms[1].rotation.z, -0.08, Math.min(1, dt * 10));
+          a.arms[1].rotation.y = 0;
         }
       }
       a.previous.set(t.x, t.y, t.z);
       if (a.flag) {
+        const isMini = a.role === "student";
         const pos = a.flag.geometry.attributes.position;
         const flutter = walking ? 0.007 : 0.004;
-        const amp = walking ? 0.095 : 0.075;
+        const amp = isMini ? 0.035 : (walking ? 0.095 : 0.075);
+        const refX = isMini ? 0.20 : 0.575;
+        const freq = isMini ? 14 : 7;
         for (let i = 0; i < pos.count; i++) {
-          const x = pos.getX(i) + 0.575;
-          pos.setZ(i, (Math.sin(x * 7 - time * flutter) * amp * x) / 0.575);
+          const x = pos.getX(i) + refX;
+          pos.setZ(i, (Math.sin(x * freq - time * flutter) * amp * x) / refX);
         }
         pos.needsUpdate = true;
         a.flag.geometry.computeVertexNormals();

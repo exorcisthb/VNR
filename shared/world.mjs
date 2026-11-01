@@ -59,10 +59,10 @@ export class VoxelWorld {
           put(x, 1, z, B.SAND);
           put(x, 2, z, B.WATER);
 
-          // Cầu gỗ và chòi ngắm sen vươn ra giữa đầm sen cho khách tham quan
+          // Cầu gỗ và chòi ngắm sen vươn ra giữa đầm sen cho khách tham quan (cân đối tuyệt đối quanh trục x=66)
           const onLotusPier =
-            (Math.abs(x - 66) <= 1 && z >= 41 && z <= 52) ||
-            (Math.abs(x - 66) <= 2 && Math.abs(z - 52) <= 2);
+            (x >= 64 && x <= 67 && z >= 40 && z <= 50) ||
+            (x >= 63 && x <= 68 && z >= 50 && z <= 54);
           if (onLotusPier) {
             put(x, 2, z, B.WOOD);
           }
