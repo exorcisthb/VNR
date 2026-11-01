@@ -3,6 +3,7 @@ import { mausoleumExterior, governmentExterior, palaceExterior } from "./facades
 import { makePagoda, makeDrum } from "./exhibits.mjs";
 import { makeTankExhibit } from "./tank-exhibit.mjs";
 import { governmentPublicInteriors } from "./government-interiors.mjs";
+import { addMuseumGallery } from "./museum.mjs";
 
 // Các cấu kiện dùng chung cho hiển thị và va chạm, đơn vị mét trong bản mô phỏng.
 // Bố trí phòng được rút gọn để tham quan, không phải bản vẽ hoàn công.
@@ -427,6 +428,7 @@ function makeMausoleum(l) {
   b.light(0, 9, 9, "#ffdfb2", 18);
   b.light(-7, 9, -3, "#fff2d7", 26);
   b.light(7, 9, -3, "#fff2d7", 26);
+  addMuseumGallery(b);
   return b;
 }
 function makePalace(l) {
@@ -1086,8 +1088,9 @@ export function findRoom(p) {
 export function isInsideBuilding(p) {
   return BUILDINGS.some(
     (b) =>
-      !b.outdoor && Math.abs(p.x - b.x) < (b.id === "mausoleum" ? 13 : 30) &&
-      Math.abs(p.z - b.z) < 14 &&
-      p.y < 25,
+      (!b.outdoor && Math.abs(p.x - b.x) < (b.id === "mausoleum" ? 13 : 30) &&
+      Math.abs(p.z - b.z) < 14 && p.y < 25) ||
+      (b.visitorAreas || []).some(a => Math.abs(p.x - a.x) < a.halfWidth &&
+        Math.abs(p.z - a.z) < a.halfDepth && p.y < 9.5),
   );
 }

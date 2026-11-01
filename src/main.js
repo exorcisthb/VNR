@@ -888,6 +888,15 @@ function drawMap(c) {
   g.ellipse(X(66), Z(53), 18 * s, 12 * s, 0, 0, 7);
   g.fill();
   BUILDINGS.forEach((b, i) => {
+    for (const area of b.visitorAreas || []) {
+      g.fillStyle = '#bca172';
+      g.fillRect(X(area.x - area.halfWidth), Z(area.z - area.halfDepth),
+        area.halfWidth * 2 * s, area.halfDepth * 2 * s);
+      if (w > 300) {
+        g.fillStyle = '#f3e9ca'; g.font = '12px Arial'; g.textAlign = 'center';
+        g.fillText('Bảo tàng', X(area.x), Z(area.z - area.halfDepth - 5));
+      }
+    }
     g.fillStyle = "#cbbb93";
     g.fillRect(
       X(b.x - (b.approach ? 10 : b.id === "mausoleum" ? 21 : 31)),

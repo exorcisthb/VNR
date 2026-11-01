@@ -6,6 +6,7 @@ import { heritageMaterials, heritageGeometries } from "./heritage.js";
 import partyFlagUrl from "./assets/party-flag.jpg";
 
 let partyFlagTexture;
+const museumPhotoTextures = new Map();
 function roofGeometry(pediment = false) {
   const s = new THREE.Shape();
   s.moveTo(-0.5, 0);
@@ -148,6 +149,15 @@ function nationalEmblemCanvas() {
 }
 
 function labelTexture(label) {
+  if (label.kind === "museum-photo") {
+    if (!museumPhotoTextures.has(label.image)) {
+      const texture = new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}museum/${label.image}`);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = 4;
+      museumPhotoTextures.set(label.image, texture);
+    }
+    return museumPhotoTextures.get(label.image);
+  }
   if (label.kind === "party-flag") {
     if (!partyFlagTexture) {
       partyFlagTexture = new THREE.TextureLoader().load(partyFlagUrl);
@@ -166,7 +176,25 @@ function labelTexture(label) {
     canvas.width = ["lacquer", "banquetPainting"].includes(label.kind) ? 2048 : 1024;
     canvas.height = label.kind === "lacquer" ? 768 : label.kind === "banquetPainting" ? 640 : label.kind === "landscape" ? 384 : 160;
     const c = canvas.getContext("2d");
-    if (label.kind === "dashboard") {
+    if (label.kind === "museum-panel") {
+      canvas.width = 1600; canvas.height = Math.round(1600 * label.height / label.width);
+      c.fillStyle = '#eee2c9'; c.fillRect(0, 0, canvas.width, canvas.height);
+      c.strokeStyle = '#ad874d'; c.lineWidth = 8;
+      c.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
+      const paragraphs = label.text.split('\n');
+      let y = 58;
+      for (let i = 0; i < paragraphs.length; i++) {
+        c.fillStyle = i === 0 ? '#812b27' : '#433529';
+        c.font = `${i === 0 ? 'bold ' : ''}${i === 0 ? 42 : 34}px Arial`;
+        let line = '';
+        for (const word of paragraphs[i].split(' ')) {
+          if (line && c.measureText(line + ' ' + word).width > 1480) {
+            c.fillText(line, 48, y); y += 44; line = word;
+          } else line += (line ? ' ' : '') + word;
+        }
+        c.fillText(line, 48, y); y += 52;
+      }
+    } else if (label.kind === "dashboard") {
       canvas.width = 1440; canvas.height = 480;
       c.fillStyle = '#102b45'; c.fillRect(0, 0, 1440, 480);
       c.fillStyle = '#e2c486'; c.font = 'bold 38px Arial';
@@ -1020,10 +1048,12 @@ export class ArchitectureRenderer {
       b.group.visible = d < distance + 38;
       for (const s of b.signs)
         s.visible = s.position.distanceTo(cameraPosition) > 3.5;
-      const edge = Math.min(
-        (34 - Math.abs(p.x - b.data.x)) / 4,
-        (24 - Math.abs(p.z - b.data.z)) / 6,
-      );
+      const areas = [{ x: b.data.x, z: b.data.z, halfWidth: 30, halfDepth: 18 },
+        ...(b.data.visitorAreas || [])];
+      const edge = Math.max(...areas.map(a => Math.min(
+        (a.halfWidth + 4 - Math.abs(p.x - a.x)) / 4,
+        (a.halfDepth + 6 - Math.abs(p.z - a.z)) / 6,
+      )));
       const weight = THREE.MathUtils.smoothstep(edge, 0, 1);
       if (weight > 0) for (const light of b.lights) {
         if (light.position.y >= p.y + 0.1 && light.position.y <= p.y + 6.6)

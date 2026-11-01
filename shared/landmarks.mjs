@@ -10,7 +10,7 @@ export const LANDMARKS = [
     x: -66,
     z: -48,
     front: 1,
-    bounds: [-95, -37, -73, 9],
+    bounds: [-124, -37, -73, 9],
     sign: { x: -51, z: 5 },
     description:
       "Khánh thành ngày 29/8/1975 tại Quảng trường Ba Đình, Hà Nội; đây là nơi gìn giữ lâu dài thi hài Chủ tịch Hồ Chí Minh.",

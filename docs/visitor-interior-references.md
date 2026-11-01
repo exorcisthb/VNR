@@ -53,3 +53,20 @@ side mirrors the lettering. Stairwell decks have rails and collision barriers
 along both long edges and the lower-end opening, with short returns and a clear
 passage at the upper landing. Exterior entrance stair flights also have side rails.
 Physics tests cover the stairwell barriers and new room spawn clearances.
+
+## Ho Chi Minh Museum visitor gallery
+
+The real museum is a separate building in the Ba Dinh memorial complex, as
+explained by the Mausoleum Guard Command:
+https://btllang.bqp.vn/cum-di-tich-lich-su-van-hoa-ba-dinh/bao-tang-ho-chi-minh.html
+
+The game adds a compact visitor gallery beside the mausoleum with a paved route,
+an entry in the room menu, an overview-map marker, attributed photographs, a bust,
+three thematic interpretation panels and illustrative book/document cases.
+Its location and architecture are game design choices, not a replica of the
+actual museum or an assertion that a museum is inside the mausoleum chamber.
+
+The two photographs were downloaded intact from the official museum's
+2021 exhibition page; the original watermark remains visible. Image URLs and
+credits are recorded in public/museum/sources.json. Book/document models are
+explicitly marked as illustrations, not original museum artefacts.
