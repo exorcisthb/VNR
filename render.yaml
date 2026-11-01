@@ -3,14 +3,13 @@ services:
     name: dau-viet-mien-khoi
     runtime: node
     plan: free
-    buildCommand: npm ci --include=dev && npm run build
+    buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
       - key: NODE_VERSION
-        value: 24.14.1
+        value: 20
       - key: GAME_ALLOWED_ORIGINS
-        value: https://vnr-livid.vercel.app
-# Gói Free không có ổ đĩa bền vững. Xem README trước khi lưu dữ liệu quan trọng.
+        value: "*"

@@ -40,28 +40,34 @@ Menu có bản đồ chung và ghé thăm nhanh từng công trình/phòng; mọ
 
 Khu trưng bày xe tăng nằm bên phải Dinh Độc Lập, tại **(110, -10)**, nối với đường chính và có nút ghé thăm nhanh trong menu. Xe giữ chi tiết, chất liệu và tỷ lệ của `3D/xe tăng.glb`; số hiệu nổi ở hai bên tháp pháo đã được sửa thành **390**. Xe đặt trên bục đá, bao quanh bằng rào kín bốn phía. Vùng va chạm dùng chung ở client/server chặn đi bộ, nhảy và di chuyển xuyên rào vào trong. Model chỉ bắt đầu tải khi người chơi đến gần khu này. Sau khi thay file gốc, chạy `npm run prepare:models -- "xe tăng"` rồi `npm run build`. Đây là khu bố trí thêm trong game; nguồn hình học là file người dùng cung cấp.
 
-## Đưa lên Vercel
+## Triển khai lên Render (Khuyên dùng - Ổn định, không bị tải lại game)
 
-Vercel build giao diện Vite trong `dist/` và backend `api/game.js`. `vercel.json` bật Fluid Compute và chuyển `/health`, `/api/rooms`, `/api/world`, `/ws` tới cùng một HTTP/WebSocket server. Giữ nguyên Framework Preset **Vite**, Build Command **npm run build**, Output Directory **dist**. Không cần đặt `VITE_WS_URL` khi dùng backend cùng domain; xóa giá trị cũ nếu nó trỏ tới máy chủ khác. Push GitHub để Vercel tạo deployment mới nếu đã liên kết repository.
+**Vì sao nên dùng Render thay vì Vercel?**
+- Vercel hoạt động theo mô hình *Serverless Function*, tự động ngắt kết nối và giải phóng tiến trình sau một khoảng thời gian ngắn (timeout), dẫn đến việc WebSocket bị mất kết nối và game bị tải lại / reset vị trí người chơi sau mỗi vài phút.
+- **Render** cung cấp môi trường **Web Service** chạy liên tục 24/7 (Node.js persistent server), hỗ trợ kết nối WebSocket thời gian thực lâu dài, giữ phòng ổn định và phục vụ cả giao diện 3D lẫn dữ liệu nhiều người chơi trên cùng một domain duy nhất.
 
-Backend Functions không ghi vào thư mục ứng dụng chỉ đọc: thế giới tham quan được tạo trong RAM, còn máy chủ Node chạy bằng `npm start` tiếp tục dùng file lưu như trước. Các file GLB được phục vụ qua CDN, không đóng gói vào Function. Có thể kiểm tra trực tiếp `/health` (JSON, HTTP 200) và `/api/rooms` (mảng JSON).
+### Cách triển khai lên Render trong 2 phút:
 
-**Giới hạn:** phòng và người chơi hiện nằm trong RAM của từng instance. Vercel có thể đưa kết nối mới sang instance khác hoặc đóng socket khi hết thời lượng Function; vì vậy bản này xử lý các route HTTP/WebSocket nhưng chưa bảo đảm cùng phòng qua nhiều instance hay qua deployment. Để vận hành đoàn nhiều người ổn định, dùng máy chủ Node một instance theo cấu hình Render bên dưới; nếu mở rộng Functions cần bổ sung kho trạng thái và pub/sub chung như Redis. Không dùng file `/tmp` làm kho phòng chung. Tham khảo [WebSockets trên Vercel](https://vercel.com/docs/functions/websockets).
+#### Cách 1: Triển khai nhanh bằng Blueprint (1-Click)
+1. Truy cập: **[Triển khai lên Render với Blueprint](https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2Fexorcisthb%2FVNR)**.
+2. Đăng nhập tài khoản Render (bằng GitHub).
+3. Render sẽ tự động đọc file `render.yaml` và cấu hình sẵn mọi thông số.
+4. Bấm **Apply** để bắt đầu build và deploy.
+5. Sau 2-3 phút, Render sẽ cấp cho bạn đường dẫn HTTPS (ví dụ: `https://dau-viet-mien-khoi.onrender.com`). Mở đường dẫn này là có thể chơi mượt mà không bị ngắt kết nối.
 
-## Đưa lên Render miễn phí
+#### Cách 2: Tạo thủ công qua Render Dashboard
+1. Đăng nhập vào [Render Dashboard](https://dashboard.render.com/).
+2. Chọn **New +** → **Web Service** → chọn repository **`exorcisthb/VNR`**.
+3. Cấu hình các mục như sau:
+   - **Name:** `dau-viet-mien-khoi` (hoặc tên tùy chọn)
+   - **Runtime:** `Node`
+   - **Build Command:** `npm install && npm run build`
+   - **Start Command:** `npm start`
+   - **Instance Type:** `Free`
+   - **Health Check Path:** `/health`
+4. Bấm **Deploy Web Service** và chờ Render hoàn tất.
 
-Nếu giữ giao diện trên Vercel nhưng chuyển backend sang Render/VPS để chơi lâu hơn giới hạn Function: đặt `VITE_GAME_SERVER_URL=https://<domain-backend>` trong môi trường build Vercel rồi redeploy. Biến này chuyển cả HTTP `/health`, `/api/rooms` và WebSocket `/ws` sang cùng backend. Trên backend đặt `GAME_ALLOWED_ORIGINS=https://vnr-livid.vercel.app` (nhiều origin phân cách bằng dấu phẩy); bỏ `VITE_WS_URL` cũ để tránh trỏ socket sang máy chủ khác. Không tự đặt `maxDuration: 1800` trên Hobby vì vượt giới hạn gói.
-
-Cũng có thể đặt URL backend vào trường `origin` của `deployment/backend.json` rồi push GitHub thay vì chỉnh biến môi trường trên Vercel. Giá trị trống giữ nguyên backend cùng domain; không điền URL trước khi backend thực sự tồn tại và `/health` trả HTTP 200.
-
-[Triển khai cấu hình miễn phí lên Render](https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2Fexorcisthb%2FVNR). Cần đăng nhập tài khoản Render và xác nhận tạo dịch vụ. Giữ plan **Free** đã khai báo trong `render.yaml`. Render không áp giới hạn thời lượng cố định cho WebSocket, nhưng dịch vụ miễn phí vẫn có thể bị khởi động lại; đây không phải cam kết uptime. Kiểm tra phiên thực tế trên 30 phút sau khi có URL triển khai.
-
-1. Đưa mã nguồn và `package-lock.json` lên GitHub. Bỏ qua `node_modules`, `dist`, `data`, `.tools`, `.env`.
-2. Tại [Render](https://dashboard.render.com/) chọn **New → Web Service**, kết nối repository, chọn **Free**, một instance, Node 24 LTS.
-3. **Build:** `npm ci --include=dev && npm run build`. **Start:** `npm start`. **Health:** `/health`. Hoặc dùng **New → Blueprint** với `render.yaml`.
-4. Deploy xong lấy URL HTTPS gửi thầy. WebSocket tự dùng WSS cùng URL. Thử bằng hai thiết bị trước khi nộp.
-
-[Render Free](https://render.com/docs/free) ngủ khi không có lưu lượng và không giữ file qua restart/redeploy. Thế giới gốc luôn sinh lại từ code. Muốn giữ dữ liệu file lâu dài cần ổ đĩa bền vững hoặc dịch vụ lưu trữ ngoài. Link Cloudflare tạm và cách mở lại nằm ở [DEMO.md](./DEMO.md).
+*Lưu ý gói Render Free:* Khi không có người truy cập trong 15 phút, server sẽ tạm ngủ để tiết kiệm tài nguyên. Khi có người mở lại web, lượt truy cập đầu tiên sẽ mất khoảng 30–50 giây để khởi động lại máy chủ. Khi đã có người trong phòng, kết nối WebSocket và cơ chế heartbeat 10s sẽ giữ server luôn thức và hoạt động ổn định.
 
 ## Kiểm tra, lưu và báo lỗi
 

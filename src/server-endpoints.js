@@ -1,4 +1,4 @@
-import backendConfig from '../deployment/backend.json';
+import backendConfig from '../deployment/backend.json' with { type: 'json' };
 
 // One backend origin must serve both room HTTP requests and WebSockets.
 // This also allows the Vercel frontend to use a long-running Node.js server.

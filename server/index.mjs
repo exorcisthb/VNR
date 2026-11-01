@@ -24,19 +24,31 @@ export async function createGameServer({
 
       try {
         const pathname = new URL(req.url, "http://localhost").pathname;
-        const decoded = decodeURIComponent(pathname),
-          file = path.resolve(
-            root,
-            "dist",
-            "." + decoded + (decoded.endsWith("/") ? "index.html" : ""),
-          );
+        const decoded = decodeURIComponent(pathname);
+        let file = path.resolve(
+          root,
+          "dist",
+          "." + decoded + (decoded.endsWith("/") ? "index.html" : ""),
+        );
         if (!file.startsWith(path.join(root, "dist") + path.sep))
           throw new Error("path");
         let data, encoding;
         if (file.endsWith('.glb') && /\bbr\b/.test(req.headers['accept-encoding'] || '')) {
           try { data = await readFile(file + '.br'); encoding = 'br'; } catch {}
         }
-        if (!data) data = await readFile(file);
+        if (!data) {
+          try {
+            data = await readFile(file);
+          } catch (e) {
+            // SPA fallback: nếu route không phải file tĩnh cụ thể, trả về dist/index.html
+            if (!path.extname(file)) {
+              file = path.resolve(root, "dist", "index.html");
+              data = await readFile(file);
+            } else {
+              throw e;
+            }
+          }
+        }
         const mime =
           {
             ".html": "text/html; charset=utf-8",
@@ -44,7 +56,16 @@ export async function createGameServer({
             ".css": "text/css; charset=utf-8",
             ".svg": "image/svg+xml",
             ".png": "image/png",
-          }[path.extname(file)] || "application/octet-stream";
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".webp": "image/webp",
+            ".glb": "model/gltf-binary",
+            ".gltf": "model/gltf+json",
+            ".json": "application/json; charset=utf-8",
+            ".woff2": "font/woff2",
+            ".woff": "font/woff",
+            ".ttf": "font/ttf",
+          }[path.extname(file).toLowerCase()] || "application/octet-stream";
         res.writeHead(200, {
           ...(encoding ? { 'Content-Encoding': encoding } : {}),
           Vary: 'Accept-Encoding',

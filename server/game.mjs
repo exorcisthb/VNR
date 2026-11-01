@@ -64,11 +64,15 @@ export async function attachGameCore({
 
   const handleHttp = (req, res, next) => {
     const allowedOrigins = (process.env.GAME_ALLOWED_ORIGINS || '').split(',').map(value => value.trim()).filter(Boolean);
-    if (req.headers.origin && allowedOrigins.includes(req.headers.origin)) {
-      res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-      res.setHeader('Vary', 'Origin');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-      if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
+    const origin = req.headers.origin;
+    if (origin) {
+      if (allowedOrigins.length === 0 || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Vary', 'Origin');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
+      }
     }
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");

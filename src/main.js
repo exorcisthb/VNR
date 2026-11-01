@@ -115,19 +115,25 @@ const network = new Network(onMessage, (ready) => {
 });
 function onMessage(m) {
   if (m.type === "welcome") {
+    const isReconnecting = playing && currentRoomId === m.roomId;
     selfId = m.id;
     currentRoomId = m.roomId;
     world = new VoxelWorld(m.edits);
-    for (const g of chunks.meshes.values()) {
-      scene.remove(g);
-      g.children.forEach((mesh) => mesh.geometry.dispose());
+    if (!isReconnecting) {
+      for (const g of chunks.meshes.values()) {
+        scene.remove(g);
+        g.children.forEach((mesh) => mesh.geometry.dispose());
+      }
+      chunks.meshes.clear();
+      chunks.queue.clear();
+      chunks.cx = undefined;
+      chunks.world = world;
+      p = { ...m.spawn, vy: 0, pitch: -0.16, grounded: false };
+      cameraSnap = true;
+    } else {
+      chunks.world = world;
+      toast("Đã kết nối lại thành công!");
     }
-    chunks.meshes.clear();
-    chunks.queue.clear();
-    chunks.cx = undefined;
-    chunks.world = world;
-    p = { ...m.spawn, vy: 0, pitch: -0.16, grounded: false };
-    cameraSnap = true;
     peerList = m.players;
     avatars.sync(peerList, selfId);
     chatLog.reset();
