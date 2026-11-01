@@ -188,3 +188,107 @@ export function governmentExterior(b, floor) {
   b.add(0, 8.5, 16.1, 19.1, 0.18, 3.8, 'civicWhite');
   for (const x of [-2.7, 2.7]) b.add(x, floor, 14.65, 0.5, 3.7, 0.25, 'darkwood', false);
 }
+
+// Exterior-only additions sit outside the existing rooms and glazing.
+export function palaceExterior(b, floor) {
+  const add = (...args) => b.add(...args);
+  const cream = 'palaceConcrete', trim = 'palaceTrim', glass = 'palaceGlass';
+  // Continuous roof cornice, shadow gap and the narrow clerestory beneath it.
+  add(0, 21.8, 0, 63.6, 0.22, 30.8, trim, false);
+  add(0, 22.02, 0, 64.2, 0.18, 31.2, cream, false);
+  add(0, 21.43, 15.15, 62.8, 0.22, 0.65, 'palaceMetal', false);
+  add(0, 20.6, 14.35, 61.5, 0.8, 0.12, glass, false);
+  for (let x = -30; x <= 30; x += 1.5)
+    add(x, 20.55, 14.65, 0.12, 0.95, 0.35, trim, false);
+  // Tall structural piers give the facade its regular rhythm.
+  for (let x = -30; x <= 30; x += 3) {
+    add(x, 9.8, 15.3, 0.25, 11.6, 0.7, cream, false);
+    add(x, 9.6, 15.3, 0.42, 0.22, 0.9, trim, false);
+  }
+  // Repeated sculpted concrete fins, with recessed glass left visible between them.
+  for (const side of [-1, 1]) {
+    for (let bay = 0; bay < 6; bay++) {
+      const cx = side * (7.5 + bay * 3);
+      for (const y of [10.1, 13.6, 17.1]) {
+        for (const offset of [-1.05, -0.35, 0.35, 1.05])
+          add(cx + offset, y, 15.55, 0.46, 3.2, 0.52, cream, false, 'palaceBlade');
+        add(cx, y, 15.45, 2.85, 0.12, 0.66, trim, false);
+      }
+      // Ground-floor arcade: dark, recessed panes and fine metal mullions.
+      add(cx, floor + 0.5, 14.22, 2.6, 4.5, 0.08, glass, false);
+      for (const dx of [-1.25, 0, 1.25])
+        add(cx + dx, floor + 0.45, 14.4, 0.065, 4.6, 0.13, 'palaceMetal', false);
+      add(cx, 8.85, 14.4, 2.7, 0.08, 0.14, trim, false);
+    }
+    // The end wings have long rectangular windows rather than the bamboo screen.
+    for (const x0 of [25.5, 28.5]) {
+      const x = side * x0;
+      for (const y of [10.1, 15.2]) {
+        add(x, y, 14.26, 2.35, 4.5, 0.1, glass, false);
+        for (const dx of [-1.32, 1.32])
+          add(x + dx, y - 0.15, 15.1, 0.32, 4.95, 0.75, cream, false);
+        add(x, y - 0.15, 15.1, 2.8, 0.3, 0.75, trim, false);
+        add(x, y + 4.55, 15.1, 2.8, 0.3, 0.75, trim, false);
+        add(x, y + 2.2, 14.55, 2.3, 0.08, 0.12, 'palaceMetal', false);
+        for (const dx of [-0.75, -0.25, 0.25, 0.75])
+          add(x + dx, y + 0.12, 14.65, 0.045, 1.1, 0.08, 'palaceMetal', false);
+      }
+    }
+    // Exposed plinth, paving and low, clipped shrubs alongside the steps.
+    add(side * 21.5, 3.02, 15.1, 18, 0.9, 0.42, 'palaceStone', false);
+    for (const x of [12.8, 18.5, 24.2, 29]) {
+      add(side * x, 3.15, 18, 1.15, 0.4, 1.15, 'ochre', false, 'cylinder');
+      add(side * x, 3.55, 18, 1.0, 1.45, 1.0, 'greenery', false, 'sphere');
+      add(side * x, 4.3, 18, 0.72, 1.1, 0.72, 'greenery', false, 'sphere');
+    }
+    // Side elevations: window surrounds and projecting concrete sun hoods.
+    for (let z = -10; z <= 10; z += 4) {
+      for (const y of [10.1, 16.1]) {
+        add(side * 30.3, y, z, 0.28, 4.8, 0.13, cream, false);
+        add(side * 30.4, y + 4.7, z, 0.85, 0.15, 3.7, trim, false);
+      }
+    }
+  }
+  // Open central loggia, slender mullions and two projecting balconies.
+  for (const y of [10, 16]) {
+    add(0, y, 16.1, 10.4, 0.25, 3.8, trim, false);
+    add(0, y + 0.28, 17.92, 10.2, 0.72, 0.18, cream, false);
+    add(0, y + 1.0, 17.95, 10.5, 0.1, 0.28, trim, false);
+    for (const x of [-5.05, 5.05]) {
+      add(x, y + 0.25, 16.15, 0.18, 0.8, 3.6, cream, false);
+      add(x, y + 0.25, 16.0, 0.32, 5.7, 0.5, cream, false);
+    }
+    for (const x of [-3.4, -1.7, 0, 1.7, 3.4]) {
+      add(x, y + 1.3, 14.5, 0.08, 4.1, 0.12, 'palaceMetal', false);
+    }
+    add(0, y + 5.55, 16.05, 10.8, 0.2, 3.9, trim, false);
+  }
+  // Thin entrance canopy with a deep shadow underneath and unblocked central passage.
+  for (const x of [-4.8, 4.8]) {
+    add(x, floor, 18.2, 0.42, 5.45, 0.42, 'palaceStone');
+    add(x, floor, 18.2, 0.7, 0.2, 0.7, cream, false);
+  }
+  add(0, 9.15, 17.7, 13.2, 0.18, 6.3, 'palaceMetal', false);
+  add(0, 9.33, 17.7, 13.7, 0.22, 6.7, trim, false);
+  add(0, 9.55, 17.7, 14.1, 0.12, 6.9, cream, false);
+  // Terrace balustrade, roof lights and small potted palms in silhouette.
+  for (const side of [-1, 1]) {
+    add(side * 22, 22.25, 13.5, 17, 0.18, 0.2, trim, false);
+    for (let x = 14; x <= 30; x += 2)
+      add(side * x, 22.1, 13.5, 0.07, 0.85, 0.07, 'palaceMetal', false);
+    add(side * 22, 22.95, 13.5, 17, 0.09, 0.16, trim, false);
+    for (const x of [15, 20, 25, 29]) {
+      add(side * x, 22.05, 9, 0.65, 0.45, 0.65, 'palaceStone', false);
+      add(side * x, 22.5, 9, 0.11, 1.5, 0.11, 'wood', false, 'cylinder');
+      for (let i = 0; i < 6; i++) {
+        const angle = i * Math.PI / 3;
+        add(side * x + Math.cos(angle) * 0.42, 23.7, 9 + Math.sin(angle) * 0.42,
+          1.25, 0.16, 0.24, 'greenery', false, 'sphere', -angle);
+      }
+    }
+  }
+  // Thin projecting lip and vertical glazing on the existing rooftop pavilion.
+  add(0, 25.86, 0, 28.6, 0.16, 16.5, trim, false);
+  for (let x = -12; x <= 12; x += 1.5)
+    add(x, 22.45, 6.75, 0.09, 2.9, 0.16, 'palaceMetal', false);
+}

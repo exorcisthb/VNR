@@ -266,6 +266,19 @@ export function heritageMaterials(){
   };
 }
 export function heritageGeometries(){
+  // Sculpted concrete brise-soleil: tapered ends and a softly swelling centre.
+  const blade = new THREE.Shape();
+  blade.moveTo(-0.12, -0.5);
+  blade.bezierCurveTo(-0.12, -0.28, -0.5, -0.18, -0.5, 0);
+  blade.bezierCurveTo(-0.5, 0.18, -0.12, 0.28, -0.12, 0.5);
+  blade.lineTo(0.12, 0.5);
+  blade.bezierCurveTo(0.12, 0.28, 0.5, 0.18, 0.5, 0);
+  blade.bezierCurveTo(0.5, -0.18, 0.12, -0.28, 0.12, -0.5);
+  blade.closePath();
+  const palaceBlade = new THREE.ExtrudeGeometry(blade, {
+    depth: 1, bevelEnabled: false, curveSegments: 10,
+  });
+  palaceBlade.translate(0, 0, -0.5);
   const vertices=[],uv=[],indices=[],n=32;
   for(let z=0;z<=n;z++)for(let x=0;x<=n;x++){
     const xx=x/n-.5,zz=z/n-.5,t=Math.max(Math.abs(xx),Math.abs(zz))*2;
@@ -279,6 +292,7 @@ export function heritageGeometries(){
   const disc=new THREE.CircleGeometry(.5,96);disc.rotateX(-Math.PI/2);
   const ring=new THREE.TorusGeometry(.5,.014,6,96);ring.rotateX(-Math.PI/2);
   return {
+    palaceBlade,
     pagodaRoof:roof,
     drumBody:new THREE.LatheGeometry(profile,96),
     drumDisc:disc,

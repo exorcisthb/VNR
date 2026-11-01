@@ -98,6 +98,11 @@ export function surfaceTexture(kind) {
 export function makeMaterials() {
   const specs = {
     ivory: ["#ddd7c7", 0.88],
+    palaceConcrete: ["#e5dfc9", 0.86],
+    palaceTrim: ["#f1ecda", 0.78],
+    palaceGlass: ["#384644", 0.3],
+    palaceStone: ["#766e5b", 0.95],
+    palaceMetal: ["#514e41", 0.65],
     civicWhite: ["#eeeede", 0.82],
     civicGlass: ["#526562", 0.36],
     civicRoof: ["#497554", 0.9],

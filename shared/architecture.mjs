@@ -1,5 +1,5 @@
 import { LANDMARKS } from "./landmarks.mjs";
-import { mausoleumExterior, governmentExterior } from "./facades.mjs";
+import { mausoleumExterior, governmentExterior, palaceExterior } from "./facades.mjs";
 import { makePagoda, makeDrum } from "./exhibits.mjs";
 import { makeTankExhibit } from "./tank-exhibit.mjs";
 
@@ -405,12 +405,8 @@ function makePalace(l) {
   const b = makeBuilding(l),
     f = 4;
   b.add(0, 3, 0, 63, 1, 29, "granite");
-  // Thềm sảnh đón đỡ hệ cột mái hiên Dinh Độc Lập
+  // Thềm sảnh đón; chi tiết mặt tiền được dựng riêng trong palaceExterior.
   b.add(0, 3, 17, 24, 1, 5, "granite");
-  for (const x of [-9.5, 9.5]) {
-    b.add(x, 3, 17.4, 0.9, 1, 0.9, "granite");
-    b.add(x, f, 17.4, 0.45, 5.7, 0.45, "ivory");
-  }
   b.steps(0, 19.5, 14, 1, 5, 0.5);
   for (let floor = 0; floor < 3; floor++) {
     const y = f + floor * 6;
@@ -440,14 +436,8 @@ function makePalace(l) {
     if (floor < 2) stairFlight(b, -25, y, 8, 6, "darkwood", "darkwood");
     for (const x of [-17, -8, 8, 17])
       b.add(x, y, 13.3, 0.42, 5.7, 0.42, "ivory");
-    if (floor > 0) {
-      for (let x = -29; x <= 29; x += 2.2)
-        b.add(x, y, 15, 0.18, 5.6, 0.7, "ivory");
-      for (const yy of [y + 1.15, y + 3.6])
-        b.add(0, yy, 15, 60, 0.15, 0.65, "ivory");
-    }
   }
-  b.add(0, 9.7, 16.2, 22, 0.3, 5, "ivory");
+  palaceExterior(b, f);
   // Sảnh chính và thảm tròn Rồng thời Nguyễn (mô hình 3D thực tế thamr.glb)
   // Vòng rào chắn cọc đồng dây nhung đỏ bảo vệ thảm
   for (let i = 0; i < 16; i++) {
