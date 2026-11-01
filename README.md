@@ -28,6 +28,8 @@ Mở **http://127.0.0.1:3000** (hoặc `http://localhost:3000`). Máy khác cùn
 - **WASD:** đi theo hướng nhìn. **Chuột:** tự điều khiển góc nhìn thứ ba; quay trái nhìn trái, quay phải nhìn phải. Nhấn **Bắt đầu hành trình** yêu cầu khóa chuột ngay trong thao tác vào game; trình duyệt nhúng không hỗ trợ sẽ dùng chuột trên khung cảnh.
 - **Esc:** thả chuột và mở menu. Chọn **Rời buổi tham quan** để về màn hình nhập tên; kết nối lại sẽ không tự bật sau khi chủ động rời.
 - **Space:** nhảy; **Shift:** đi nhanh; **Enter:** chat; **E:** xem tư liệu; **R:** về điểm xuất phát. Trong phòng viếng, nhân vật chỉ đi bộ.
+
+Chat: nhấn **Enter** mở ô nhập, Enter lần nữa để gửi; **Esc** mở menu. Tin mới nằm dưới cùng và danh sách tự cuộn khi đang xem tin mới nhất. Nếu cuộn lên đọc tin cũ, vị trí đọc được giữ nguyên và nút **Tin nhắn mới ↓** đưa về cuối. Toàn bộ tin nhắn được giữ trong thời gian phòng còn hoạt động, không cắt sau 25 tin; khi host kết thúc phòng, lịch sử phòng bị xóa. Phòng mới dùng lại cùng ID bắt đầu với lịch sử trống.
 - Cuộn chuột chỉnh khoảng cách camera. Camera tự thu gần khi vướng tường/trần. Không còn thanh vật phẩm, đặt hay phá khối.
 - Điện thoại: joystick trái để đi, vuốt khung cảnh để nhìn, nút ↑ để nhảy. Menu có ba mức chất lượng.
 - Host mặc **sơ mi trắng tay ngắn, quần đen và cầm cờ Việt Nam**. Sinh viên mặc **polo FPT cam viền trắng, quần đen, giày sáng màu và đeo balo phía sau**. Trang phục được dựng theo ảnh tham khảo người dùng cung cấp. Đây là vai trò hiển thị, không phải tài khoản quản trị.

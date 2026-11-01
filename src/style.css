@@ -788,6 +788,7 @@ kbd {
   text-underline-offset: 3px;
 }
 .chat-panel {
+  pointer-events: auto;
   position: absolute;
   bottom: 32px;
   left: 4%;
@@ -817,13 +818,31 @@ kbd {
   font-size: 11px;
   line-height: 1.6;
   max-height: 145px;
-  overflow: auto;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #e8bd7e99 #17392f88;
+  touch-action: pan-y;
   overflow-wrap: anywhere;
   pointer-events: auto;
 }
 #messages b {
   color: var(--gold);
   font-weight: 500;
+}
+#messages::-webkit-scrollbar { width: 7px; }
+#messages::-webkit-scrollbar-thumb { background: #e8bd7e99; border-radius: 8px; }
+#messages::-webkit-scrollbar-track { background: #17392f88; }
+#chat-latest {
+  margin: 0 0 6px;
+  padding: 5px 10px;
+  border: 1px solid #e8bd7e88;
+  border-radius: 12px;
+  background: #17392f;
+  color: var(--gold);
+  font-size: 11px;
 }
 #chat-hint {
   font-size: 9px;

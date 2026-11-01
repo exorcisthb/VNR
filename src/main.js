@@ -12,10 +12,12 @@ import {
 import { ChunkRenderer } from "./mesher.js";
 import { Network } from "./network.js";
 import { Avatars } from "./avatars.js";
+import { ChatLog, opensChat } from "./chat-log.js";
 import { ArchitectureRenderer } from "./architecture.js";
 import { addScenery } from "./scenery.js";
 const $ = (id) => document.getElementById(id),
   canvas = $("game");
+const chatLog = new ChatLog($("messages"), $("chat-latest"));
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("#c4d1cb");
 scene.fog = new THREE.Fog("#c4d1cb", 58, 112);
@@ -127,8 +129,9 @@ function onMessage(m) {
     cameraSnap = true;
     peerList = m.players;
     avatars.sync(peerList, selfId);
-    $("messages").replaceChildren();
+    chatLog.reset();
     m.history.forEach((c) => addMessage(c.name, c.text));
+    chatLog.scrollToLatest();
     updateRole();
     if (m.roomId) {
       $("connection").textContent = `Phòng #${m.roomId}`;
@@ -150,6 +153,10 @@ function onMessage(m) {
   } else if (m.type === "chat") addMessage(m.name, m.text);
   else if (m.type === "error") toast(m.message);
   else if (m.type === "disbanded") {
+    network.disconnect();
+    currentRoomId = null;
+    peerList = [];
+    resetChat();
     wantsLook = false;
     document.exitPointerLock?.();
     playing = false;
@@ -276,7 +283,7 @@ function enterSoloMode(name, action = "create") {
   const role = action === "create" ? "host" : "student";
   peerList = [{ id: selfId, name, role, x: p.x, y: p.y, z: p.z, yaw: p.yaw }];
   avatars.sync(peerList, selfId);
-  $("messages").replaceChildren();
+  chatLog.reset();
   addMessage("Dấu Việt", `Chào mừng ${name} đến với Không gian Di sản Việt Nam!`);
   updateRole();
 
@@ -528,6 +535,7 @@ function menu(show) {
 $("menu-button").addEventListener("click", () => menu(!paused));
 $("resume").addEventListener("click", () => menu(false));
 $("leave").addEventListener("click", () => {
+  resetChat();
   wantsLook = false;
   isSolo = false;
   currentRoomId = null;
@@ -625,6 +633,19 @@ window.addEventListener("blur", () => {
   if (playing && !paused && $("chat-form").hidden) menu(true);
 });
 document.addEventListener("keydown", (e) => {
+  const typing = e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement || e.target instanceof HTMLTextAreaElement || e.target.isContentEditable;
+  if (opensChat(e, { playing, paused, typing })) {
+    // Cancel Enter's default button activation; otherwise a focused Menu
+    // button receives a synthetic click after the chat input opens.
+    e.preventDefault();
+    e.stopPropagation();
+    if (!e.repeat) openChat();
+    return;
+  }
+  if ((e.code === 'Enter' || e.code === 'NumpadEnter') && e.repeat && !$("chat-form").hidden) {
+    e.preventDefault();
+    return;
+  }
   if (e.code === "Escape") {
     e.preventDefault();
     if (starting && !playing) {
@@ -635,22 +656,15 @@ document.addEventListener("keydown", (e) => {
     }
     if (playing) {
       $("chat-form").hidden = true;
+      $("chat-hint").hidden = false;
       $("chat-input").blur();
       menu(true);
     }
     return;
   }
-  if (
-    e.target instanceof HTMLInputElement ||
-    e.target instanceof HTMLSelectElement
-  )
-    return;
+  if (typing || e.isComposing) return;
   if (!playing || paused) return;
   if (["Space", "ArrowUp", "ArrowDown"].includes(e.code)) e.preventDefault();
-  if (e.code === "Enter") {
-    openChat();
-    return;
-  }
   if (e.code === "KeyE") {
     menu(true);
     return;
@@ -666,7 +680,7 @@ document.addEventListener("keydown", (e) => {
     return;
   }
   keys.add(e.code);
-});
+}, { capture: true });
 document.addEventListener("keyup", (e) => keys.delete(e.code));
 const joy = $("joystick");
 function updateJoy(e) {
@@ -705,21 +719,22 @@ $("touch-jump").addEventListener("pointerdown", (e) => {
 for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
   $("touch-jump").addEventListener(type, () => (touch.jump = false));
 function addMessage(name, text) {
-  const li = document.createElement("li"),
-    b = document.createElement("b");
-  b.textContent = name + ": ";
-  li.append(b, document.createTextNode(text));
-  $("messages").append(li);
-  while ($("messages").children.length > 25) $("messages").firstChild.remove();
-  $("messages").scrollTop = $("messages").scrollHeight;
+  chatLog.append(name, text);
+}
+function resetChat() {
+  chatLog.reset();
+  $("chat-input").value = '';
+  $("chat-input").blur();
+  $("chat-form").hidden = true;
+  $("chat-hint").hidden = false;
 }
 function openChat() {
   if (!playing || paused) return;
   wantsLook = false;
   clearInput();
-  document.exitPointerLock?.();
   $("chat-form").hidden = false;
   $("chat-hint").hidden = true;
+  document.exitPointerLock?.();
   $("chat-input").focus();
 }
 $("chat-button").addEventListener("click", openChat);
@@ -727,6 +742,7 @@ $("chat-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const text = $("chat-input").value.trim();
   if (text) {
+    chatLog.scrollToLatest();
     if (isSolo) {
       const self = peerList.find((p) => p.id === selfId);
       addMessage(self?.name || "Bạn", text);

@@ -47,3 +47,35 @@ test('Vercel rewrite targets serve health, rooms and WebSocket room membership t
     await app.close();
   }
 });
+
+test('room chat retains all messages, stays private, and disappears when the host ends the room', {timeout:15000}, async () => {
+  const app=await createFunctionServer(); const clients=[];
+  try {
+    await new Promise(resolve=>app.server.listen(0,'127.0.0.1',resolve));
+    const origin=`http://127.0.0.1:${app.server.address().port}`;
+    async function join(action,roomId,name) {
+      const ws=new WebSocket(origin.replace('http:','ws:')+'/ws');clients.push(ws);
+      await once(ws,'open');const welcome=waitFor(ws,m=>m.type==='welcome');
+      ws.send(JSON.stringify({type:'join',action,roomId,name}));return {ws,welcome:await welcome};
+    }
+    const host=await join('create',null,'Host');const id=host.welcome.roomId;
+    for(let i=0;i<9;i++) {
+      const member=await join('join',id,`Student ${i}`);
+      for(let j=0;j<3;j++) {
+        const text=`Tin ${i*3+j}`;const echoed=waitFor(host.ws,m=>m.type==='chat'&&m.text===text);
+        member.ws.send(JSON.stringify({type:'chat',text}));await echoed;
+      }
+    }
+    const late=await join('join',id,'Late student');
+    assert.equal(late.welcome.history.length,27);
+    assert.equal(late.welcome.history[0].text,'Tin 0');
+    assert.equal(late.welcome.history.at(-1).text,'Tin 26');
+    const other=await join('create',null,'Other host');assert.deepEqual(other.welcome.history,[]);
+    const disbanded=waitFor(late.ws,m=>m.type==='disbanded');const closed=once(host.ws,'close');
+    host.ws.close();await disbanded;await closed;
+    const rooms=await (await fetch(origin+'/api/rooms')).json();assert.ok(!rooms.some(room=>room.id===id));
+    const next=await join('create',null,'New host');
+    assert.equal(next.welcome.roomId,id);
+    assert.deepEqual(next.welcome.history,[]);
+  } finally { for(const ws of clients)ws.terminate();await app.close(); }
+});

@@ -374,7 +374,6 @@ export async function attachGameCore({
         if (ws.roomId && rooms.has(ws.roomId)) {
           const room = rooms.get(ws.roomId);
           room.history.push(message);
-          if (room.history.length > 25) room.history.shift();
           broadcastToRoom(room.id, message);
         }
       }
@@ -403,6 +402,7 @@ export async function attachGameCore({
               memberWs.close(1000, "Host left");
             }
             room.players.clear();
+            room.history.length = 0;
             rooms.delete(room.id); // Thu hồi ID phòng để tái sử dụng
           } else {
             // Sinh viên rời phòng
