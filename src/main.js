@@ -200,7 +200,6 @@ let lobbyData = { players: 0, maxPlayers: 50, hostName: null };
 let healthFailures = 0;
 
 function refreshLobby() {
-  if (healthFailures > 2) return;
   fetch("/health")
     .then((r) => {
       if (!r.ok) throw new Error("HTTP " + r.status);
@@ -230,10 +229,10 @@ function refreshLobby() {
     .catch(() => {
       healthFailures++;
       if (playing) return;
-      $("connection").textContent = "Không gian di sản 3D";
-      $("online").textContent = "Sẵn sàng";
+      $("connection").textContent = "Chưa kết nối được máy chủ";
+      $("online").textContent = "Mất kết nối";
       if ($("room-capacity-badge")) {
-        $("room-capacity-badge").textContent = "Tham quan không giới hạn";
+        $("room-capacity-badge").textContent = "Máy chủ chưa sẵn sàng";
       }
       if ($("btn-create")) $("btn-create").disabled = false;
       if ($("btn-join")) $("btn-join").disabled = false;

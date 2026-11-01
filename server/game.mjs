@@ -18,7 +18,7 @@ import {
 } from "../shared/physics.mjs";
 import { isProtected, LANDMARKS, visitSpawn } from "../shared/landmarks.mjs";
 import { ROOMS } from "../shared/architecture.mjs";
-import { WorldStorage, loadSave } from "./storage.mjs";
+import { WorldStorage, MemoryWorldStorage, loadSave } from "./storage.mjs";
 
 export const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -44,15 +44,16 @@ export async function attachGameCore({
   middlewares,
   worldFile = process.env.WORLD_FILE || path.join(root, "data", "world.json"),
   dev = false,
+  persistent = true,
 } = {}) {
-  const saved = await loadSave(worldFile);
+  const saved = persistent ? await loadSave(worldFile) : { edits: [] };
   const world = new VoxelWorld(
     saved.edits.filter(([k]) => {
       const [x, y, z] = k.split(",").map(Number);
       return !isProtected(x, y, z) && !spawnProtected(x, z);
     }),
   );
-  const storage = new WorldStorage(worldFile, world);
+  const storage = persistent ? new WorldStorage(worldFile, world) : new MemoryWorldStorage(world);
   await storage.flush();
 
   const players = new Map();
@@ -442,6 +443,9 @@ export async function attachGameCore({
       }
     }
   }, 25000);
+  tick.unref();
+  saves.unref();
+  heartbeat.unref();
 
   const close = async () => {
     if (closing) return;

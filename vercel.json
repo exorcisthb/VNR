@@ -1,6 +1,19 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite"
+  "framework": "vite",
+  "fluid": true,
+  "functions": {
+    "api/game.js": {
+      "maxDuration": 300,
+      "excludeFiles": "{public/**,dist/**,3D/**,.tools/**,data/**,tests/**,*.zip}"
+    }
+  },
+  "rewrites": [
+    { "source": "/health", "destination": "/api/game?route=health" },
+    { "source": "/api/rooms", "destination": "/api/game?route=rooms" },
+    { "source": "/api/world", "destination": "/api/game?route=world" },
+    { "source": "/ws", "destination": "/api/game?route=ws" }
+  ]
 }
 

@@ -38,6 +38,14 @@ Menu có bản đồ chung và ghé thăm nhanh từng công trình/phòng; mọ
 
 Khu trưng bày xe tăng nằm bên phải Dinh Độc Lập, tại **(110, -10)**, nối với đường chính và có nút ghé thăm nhanh trong menu. Xe giữ chi tiết, chất liệu và tỷ lệ của `3D/xe tăng.glb`; số hiệu nổi ở hai bên tháp pháo đã được sửa thành **390**. Xe đặt trên bục đá, bao quanh bằng rào kín bốn phía. Vùng va chạm dùng chung ở client/server chặn đi bộ, nhảy và di chuyển xuyên rào vào trong. Model chỉ bắt đầu tải khi người chơi đến gần khu này. Sau khi thay file gốc, chạy `npm run prepare:models -- "xe tăng"` rồi `npm run build`. Đây là khu bố trí thêm trong game; nguồn hình học là file người dùng cung cấp.
 
+## Đưa lên Vercel
+
+Vercel build giao diện Vite trong `dist/` và backend `api/game.js`. `vercel.json` bật Fluid Compute và chuyển `/health`, `/api/rooms`, `/api/world`, `/ws` tới cùng một HTTP/WebSocket server. Giữ nguyên Framework Preset **Vite**, Build Command **npm run build**, Output Directory **dist**. Không cần đặt `VITE_WS_URL` khi dùng backend cùng domain; xóa giá trị cũ nếu nó trỏ tới máy chủ khác. Push GitHub để Vercel tạo deployment mới nếu đã liên kết repository.
+
+Backend Functions không ghi vào thư mục ứng dụng chỉ đọc: thế giới tham quan được tạo trong RAM, còn máy chủ Node chạy bằng `npm start` tiếp tục dùng file lưu như trước. Các file GLB được phục vụ qua CDN, không đóng gói vào Function. Có thể kiểm tra trực tiếp `/health` (JSON, HTTP 200) và `/api/rooms` (mảng JSON).
+
+**Giới hạn:** phòng và người chơi hiện nằm trong RAM của từng instance. Vercel có thể đưa kết nối mới sang instance khác hoặc đóng socket khi hết thời lượng Function; vì vậy bản này xử lý các route HTTP/WebSocket nhưng chưa bảo đảm cùng phòng qua nhiều instance hay qua deployment. Để vận hành đoàn nhiều người ổn định, dùng máy chủ Node một instance theo cấu hình Render bên dưới; nếu mở rộng Functions cần bổ sung kho trạng thái và pub/sub chung như Redis. Không dùng file `/tmp` làm kho phòng chung. Tham khảo [WebSockets trên Vercel](https://vercel.com/docs/functions/websockets).
+
 ## Đưa lên Render miễn phí
 
 1. Đưa mã nguồn và `package-lock.json` lên GitHub. Bỏ qua `node_modules`, `dist`, `data`, `.tools`, `.env`.

@@ -35,7 +35,7 @@ export class Network {
           reject(err);
           ws.close();
         }
-      }, 3500);
+      }, 12000);
       ws.addEventListener("open", () => {
         if (this.stopped || generation !== this.generation) {
           ws.close();

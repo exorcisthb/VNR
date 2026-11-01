@@ -87,3 +87,14 @@ export class WorldStorage {
     return this.queue;
   }
 }
+
+// Tour deployments cannot edit voxels. Serverless instances therefore need
+// no filesystem writes (the deployed application directory is read-only).
+export class MemoryWorldStorage extends WorldStorage {
+  constructor(world) { super(null, world); }
+  async flush() {
+    if (this.dirty) this.lastSaved = new Date().toISOString();
+    this.dirty = false;
+    this.lastError = null;
+  }
+}
