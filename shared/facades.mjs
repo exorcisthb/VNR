@@ -81,9 +81,6 @@ export function mausoleumExterior(b, floor) {
   // Bồn hoa cây cảnh xanh và thảm hoa tươi trước Khán đài A (đặt liền sát mặt đất)
   b.add(-32.5, 3.0, 22.65, 22.6, 0.45, 0.35, 'civicRoof', false);
   b.add(-32.5, 2.95, 23.2, 22.4, 0.32, 0.5, 'lotusPink', false);
-  // Trụ panô cờ lễ hội đỏ thắm bên cánh trái
-  b.add(-18.5, 3.0, 22.5, 1.6, 6.2, 0.15, 'mausRed', false);
-  b.add(-18.5, 3.0, 22.5, 1.8, 0.3, 0.4, 'granite');
 
   // Khán đài B (bên phải khi nhìn vào Lăng): Khẩu hiệu "CHỦ TỊCH HỒ CHÍ MINH VĨ ĐẠI SỐNG MÃI TRONG SỰ NGHIỆP CỦA CHÚNG TA !"
   b.add(32.5, 3.0, 20.5, 23.6, 0.6, 5.0, 'mausStone');
@@ -101,9 +98,6 @@ export function mausoleumExterior(b, floor) {
   // Bồn hoa cây cảnh xanh và thảm hoa tươi trước Khán đài B (đặt liền sát mặt đất)
   b.add(32.5, 3.0, 22.65, 22.6, 0.45, 0.35, 'civicRoof', false);
   b.add(32.5, 2.95, 23.2, 22.4, 0.32, 0.5, 'lotusPink', false);
-  // Trụ panô cờ lễ hội đỏ thắm bên cánh phải
-  b.add(18.5, 3.0, 22.5, 1.6, 6.2, 0.15, 'mausRed', false);
-  b.add(18.5, 3.0, 22.5, 1.8, 0.3, 0.4, 'granite');
 
   // =========================================================================
   // CỘT CỜ TRUNG TÂM QUẢNG TRƯỜNG BA ĐÌNH (CỘT CỜ LĂNG BÁC - LỄ THƯỢNG CỜ)
