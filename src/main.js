@@ -13,6 +13,7 @@ import { ChunkRenderer } from "./mesher.js";
 import { Network } from "./network.js";
 import { Avatars } from "./avatars.js";
 import { ChatLog, opensChat } from "./chat-log.js";
+import { configuredServerEndpoints } from "./server-endpoints.js";
 import { ArchitectureRenderer } from "./architecture.js";
 import { addScenery } from "./scenery.js";
 const $ = (id) => document.getElementById(id),
@@ -207,7 +208,7 @@ let lobbyData = { players: 0, maxPlayers: 50, hostName: null };
 let healthFailures = 0;
 
 function refreshLobby() {
-  fetch("/health")
+  fetch(configuredServerEndpoints().health)
     .then((r) => {
       if (!r.ok) throw new Error("HTTP " + r.status);
       return r.json();
@@ -417,7 +418,7 @@ async function fetchAndRenderRooms() {
     </div>
   `;
   try {
-    const res = await fetch("/api/rooms");
+    const res = await fetch(configuredServerEndpoints().rooms);
     if (!res.ok) throw new Error("HTTP " + res.status);
     const rooms = await res.json();
     if (!rooms || rooms.length === 0) {

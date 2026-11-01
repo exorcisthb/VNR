@@ -11,4 +11,6 @@ services:
         value: production
       - key: NODE_VERSION
         value: 24.14.1
+      - key: GAME_ALLOWED_ORIGINS
+        value: https://vnr-livid.vercel.app
 # Gói Free không có ổ đĩa bền vững. Xem README trước khi lưu dữ liệu quan trọng.

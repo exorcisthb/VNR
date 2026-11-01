@@ -50,6 +50,12 @@ Backend Functions không ghi vào thư mục ứng dụng chỉ đọc: thế gi
 
 ## Đưa lên Render miễn phí
 
+Nếu giữ giao diện trên Vercel nhưng chuyển backend sang Render/VPS để chơi lâu hơn giới hạn Function: đặt `VITE_GAME_SERVER_URL=https://<domain-backend>` trong môi trường build Vercel rồi redeploy. Biến này chuyển cả HTTP `/health`, `/api/rooms` và WebSocket `/ws` sang cùng backend. Trên backend đặt `GAME_ALLOWED_ORIGINS=https://vnr-livid.vercel.app` (nhiều origin phân cách bằng dấu phẩy); bỏ `VITE_WS_URL` cũ để tránh trỏ socket sang máy chủ khác. Không tự đặt `maxDuration: 1800` trên Hobby vì vượt giới hạn gói.
+
+Cũng có thể đặt URL backend vào trường `origin` của `deployment/backend.json` rồi push GitHub thay vì chỉnh biến môi trường trên Vercel. Giá trị trống giữ nguyên backend cùng domain; không điền URL trước khi backend thực sự tồn tại và `/health` trả HTTP 200.
+
+[Triển khai cấu hình miễn phí lên Render](https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2Fexorcisthb%2FVNR). Cần đăng nhập tài khoản Render và xác nhận tạo dịch vụ. Giữ plan **Free** đã khai báo trong `render.yaml`. Render không áp giới hạn thời lượng cố định cho WebSocket, nhưng dịch vụ miễn phí vẫn có thể bị khởi động lại; đây không phải cam kết uptime. Kiểm tra phiên thực tế trên 30 phút sau khi có URL triển khai.
+
 1. Đưa mã nguồn và `package-lock.json` lên GitHub. Bỏ qua `node_modules`, `dist`, `data`, `.tools`, `.env`.
 2. Tại [Render](https://dashboard.render.com/) chọn **New → Web Service**, kết nối repository, chọn **Free**, một instance, Node 24 LTS.
 3. **Build:** `npm ci --include=dev && npm run build`. **Start:** `npm start`. **Health:** `/health`. Hoặc dùng **New → Blueprint** với `render.yaml`.

@@ -1,3 +1,5 @@
+import { configuredServerEndpoints } from './server-endpoints.js';
+
 export class Network {
   constructor(onMessage, onStatus) {
     this.onMessage = onMessage;
@@ -17,12 +19,7 @@ export class Network {
     clearTimeout(this.retry);
     const generation = ++this.generation;
     return new Promise((resolve, reject) => {
-      const defaultWs =
-        (location.protocol === "https:" ? "wss:" : "ws:") +
-        "//" +
-        location.host +
-        "/ws";
-      const wsUrl = import.meta.env?.VITE_WS_URL || defaultWs;
+      const wsUrl = configuredServerEndpoints().websocket;
       const ws = new WebSocket(wsUrl);
       this.socket = ws;
       let settled = false,

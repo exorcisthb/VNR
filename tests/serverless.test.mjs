@@ -48,6 +48,26 @@ test('Vercel rewrite targets serve health, rooms and WebSocket room membership t
   }
 });
 
+test('external backend allows lobby HTTP only for configured browser origins', async () => {
+  const previous=process.env.GAME_ALLOWED_ORIGINS;
+  process.env.GAME_ALLOWED_ORIGINS='https://game.example';
+  const app=await createFunctionServer();
+  try {
+    await new Promise(resolve=>app.server.listen(0,'127.0.0.1',resolve));
+    const origin=`http://127.0.0.1:${app.server.address().port}`;
+    const allowed=await fetch(origin+'/health',{headers:{Origin:'https://game.example'}});
+    assert.equal(allowed.headers.get('access-control-allow-origin'),'https://game.example');
+    const denied=await fetch(origin+'/health',{headers:{Origin:'https://other.example'}});
+    assert.equal(denied.headers.get('access-control-allow-origin'),null);
+    const preflight=await fetch(origin+'/api/rooms',{method:'OPTIONS',headers:{Origin:'https://game.example'}});
+    assert.equal(preflight.status,204);
+  } finally {
+    await app.close();
+    if(previous===undefined)delete process.env.GAME_ALLOWED_ORIGINS;
+    else process.env.GAME_ALLOWED_ORIGINS=previous;
+  }
+});
+
 test('room chat retains all messages, stays private, and disappears when the host ends the room', {timeout:15000}, async () => {
   const app=await createFunctionServer(); const clients=[];
   try {
