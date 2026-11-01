@@ -323,9 +323,9 @@ function makeMausoleum(l) {
   b.add(0, 5.35, -3, 0.78, 0.42, 1.95, "whiteUniform", false, "restingPresident");
 
   // 4. Bốn chiến sĩ Tiêu binh canh gác mặc quân phục màu xanh của Quân đội nhân dân Việt Nam
-  for (const x of [-1.65, 1.65]) {
+  for (const x of [-2.9, 2.9]) {
     for (const z of [-4.6, -1.4]) {
-      b.add(x, f + 0.50, z, 0.52, 1.80, 0.52, "armyUniform", false, "honorGuard");
+      b.add(x, f, z, 0.52, 1.80, 0.52, "armyUniform", false, "honorGuard");
     }
   }
 

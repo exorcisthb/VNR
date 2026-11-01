@@ -818,11 +818,12 @@ export class ArchitectureRenderer {
       }).catch(error => console.warn("Không tải được model thi hài Bác:", error));
       if (b.id === "mausoleum") {
         // The scan already contains two upright guards separated along X.
-        // Place one complete pair per row, using its original proportions.
+        // Indoor pairs must clear the 4.6 m plinth and stay inside the railings.
         const guardRows = [...new Set(honorGuardParts.map(p => p.position[2]))];
+        const entranceRow = Math.max(...guardRows);
         addModelInstances(group, MODEL_URLS.honorGuard, guardRows.map(z => ({
-          position: [b.x, 4.2, z + (z === Math.max(...guardRows) ? 0.75 * b.front : 0)],
-          width: 5.1,
+          position: [b.x, 4.22, z + (z === entranceRow ? 0.75 * b.front : 0)],
+          width: z === entranceRow ? 5.1 : 6.7,
           height: 2.8,
           depth: 0.6,
           rotationY: b.front === -1 ? Math.PI : 0,
