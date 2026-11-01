@@ -11,6 +11,7 @@ export const MODEL_URLS = {
   hoChiMinhBust: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('tượng bác.glb')}`,
   quanAmStatue: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('tượng quan âm.glb')}`,
   restingPresident: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('thi hài bác.glb')}`,
+  honorGuard: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('canh gác.glb')}`,
   banquetPainting: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('tranh phòng đại yến.glb')}?v=2`,
   tank: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('xe tăng.glb')}?v=2`,
 };
@@ -35,12 +36,19 @@ export function normalizeModel(root) {
   return { meshes, size: size.divideScalar(width) };
 }
 
-export async function addModelInstances(parent, url, placements) {
+export async function addModelInstances(parent, url, placements, modelRotation = [0, 0, 0]) {
   if (!placements.length) return;
-  if (!cache.has(url)) {
-    cache.set(url, new GLTFLoader().loadAsync(url).then(gltf => normalizeModel(gltf.scene)));
+  const cacheKey = `${url}|${modelRotation.join(",")}`;
+  if (!cache.has(cacheKey)) {
+    cache.set(cacheKey, new GLTFLoader().loadAsync(url).then(gltf => {
+      if (modelRotation.every(angle => angle === 0)) return normalizeModel(gltf.scene);
+      const orientedRoot = new THREE.Group();
+      orientedRoot.rotation.set(...modelRotation);
+      orientedRoot.add(gltf.scene);
+      return normalizeModel(orientedRoot);
+    }));
   }
-  const model = await cache.get(url);
+  const model = await cache.get(cacheKey);
   const group = new THREE.Group();
   group.name = url;
   for (const part of model.meshes) {

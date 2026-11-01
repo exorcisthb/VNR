@@ -705,6 +705,7 @@ export class ArchitectureRenderer {
       const bustParts = b.parts.filter(p => p.shape === "hoChiMinhBust");
       const quanAmParts = b.parts.filter(p => p.shape === "quanAmStatue");
       const restingParts = b.parts.filter(p => p.shape === "restingPresident");
+      const honorGuardParts = b.parts.filter(p => p.shape === "honorGuard");
       for (const p of b.parts) {
         if (p.shape === "collision") continue;
         const key = `${p.mat}:${p.shape}:${p.model || ""}`;
@@ -804,6 +805,17 @@ export class ArchitectureRenderer {
           if (child.userData.shape === "restingPresident") child.visible = false;
         }
       }).catch(error => console.warn("Không tải được model thi hài Bác:", error));
+      if (b.id === "mausoleum") {
+        addModelInstances(group, MODEL_URLS.honorGuard, honorGuardParts.map(p => ({
+          position: [p.position[0], p.position[1] - p.size[1] / 2, p.position[2]],
+          width: p.size[0], height: p.size[1], depth: p.size[2],
+          rotationY: p.rotationY + (p.front === -1 ? Math.PI : 0),
+        })), [0, 0, Math.PI / 2]).then(model => {
+          if (model) for (const child of group.children) {
+            if (child.userData.shape === "honorGuard") child.visible = false;
+          }
+        }).catch(error => console.warn("Không tải được model lính canh:", error));
+      }
       if (b.id === "palace") {
         const paintingParts = b.parts.filter(p => p.model === "banquetPainting");
         addModelInstances(group, MODEL_URLS.banquetPainting, paintingParts.map(p => ({
