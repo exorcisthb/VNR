@@ -692,6 +692,14 @@ export class ArchitectureRenderer {
     this.buildings = [];
     this.doors = [];
     this.modelDisplays = [];
+    // Keep the shader's point-light count constant while entering/leaving rooms.
+    this.lightPool = Array.from({ length: 3 }, () => {
+      const light = new THREE.PointLight('#fff1d9', 0, 22, 1.5);
+      light.userData.source = null;
+      scene.add(light);
+      return light;
+    });
+    this.lastLightUpdate = performance.now();
     this.materials = { ...makeMaterials(), ...heritageMaterials() };
     const geometries = {
       box: new THREE.BoxGeometry(1, 1, 1),
@@ -781,7 +789,6 @@ export class ArchitectureRenderer {
         point.position.fromArray(light.position);
         point.visible = false;
         lights.push(point);
-        scene.add(point);
       }
       scene.add(group);
       this.buildings.push({ data: b, group, lights, signs });
@@ -963,6 +970,10 @@ export class ArchitectureRenderer {
     }
   }
   update(p, distance = 112, cameraPosition = p, maxLights = 3) {
+    const now = performance.now();
+    const lightBlend = 1 - Math.exp(-Math.min((now - this.lastLightUpdate) / 1000, 0.1) * 7);
+    this.lastLightUpdate = now;
+    const candidates = [];
     for (const display of this.modelDisplays) {
       const [x, , z] = display.placement.position;
       if (display.requested || Math.hypot(p.x - x, p.z - z) > display.loadDistance) continue;
@@ -984,21 +995,36 @@ export class ArchitectureRenderer {
       b.group.visible = d < distance + 38;
       for (const s of b.signs)
         s.visible = s.position.distanceTo(cameraPosition) > 3.5;
-      const inside =
-        Math.abs(p.x - b.data.x) < 32 && Math.abs(p.z - b.data.z) < 20;
-      const nearest = inside
-        ? b.lights
-            .filter(
-              (l) => l.position.y >= p.y + 0.1 && l.position.y <= p.y + 6.6,
-            )
-            .sort(
-              (a, b) =>
-                a.position.distanceToSquared(p) -
-                b.position.distanceToSquared(p),
-            )
-            .slice(0, maxLights)
-        : [];
-      for (const l of b.lights) l.visible = nearest.includes(l);
+      const edge = Math.min(
+        (34 - Math.abs(p.x - b.data.x)) / 4,
+        (24 - Math.abs(p.z - b.data.z)) / 6,
+      );
+      const weight = THREE.MathUtils.smoothstep(edge, 0, 1);
+      if (weight > 0) for (const light of b.lights) {
+        if (light.position.y >= p.y + 0.1 && light.position.y <= p.y + 6.6)
+          candidates.push({ light, weight, distance: light.position.distanceToSquared(p) });
+      }
+    }
+    const selected = candidates.sort((a, b) => a.distance - b.distance)
+      .slice(0, Math.max(0, Math.min(maxLights, this.lightPool.length)));
+    const assigned = new Set(this.lightPool.map(light => light.userData.source));
+    for (const slot of this.lightPool) {
+      if (!slot.userData.source) {
+        const next = selected.find(({ light }) => !assigned.has(light));
+        if (next) {
+          slot.userData.source = next.light;
+          assigned.add(next.light);
+          slot.position.copy(next.light.position);
+          slot.color.copy(next.light.color);
+        }
+      }
+      const target = selected.find(({ light }) => light === slot.userData.source);
+      const intensity = target ? target.light.intensity * target.weight : 0;
+      slot.intensity += (intensity - slot.intensity) * lightBlend;
+      if (!target && slot.intensity < 0.03) {
+        slot.intensity = 0;
+        slot.userData.source = null;
+      }
     }
   }
 }

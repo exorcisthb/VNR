@@ -96,11 +96,24 @@ export function mausoleumExterior(b, floor) {
   // =========================================================================
   // CỘT CỜ TRUNG TÂM QUẢNG TRƯỜNG BA ĐÌNH (CỘT CỜ LĂNG BÁC - LỄ THƯỢNG CỜ)
   // =========================================================================
-  // Bệ tam cấp đá hoa cương đỏ và xám trang nghiêm
-  b.add(0, 3.0, 32.0, 5.8, 0.45, 5.8, 'granite');
-  b.add(0, 3.45, 32.0, 4.4, 0.45, 4.4, 'mausStone');
-  b.add(0, 3.90, 32.0, 3.0, 0.60, 3.0, 'mausRed');
-  b.add(0, 4.50, 32.0, 1.2, 0.35, 1.2, 'bronze', false, 'cylinder');
+  // Low granite steps, a dressed stone pedestal and a bolted metal pole socket.
+  for (const [width, y] of [[6.2, 3], [5.7, 3.16], [5.2, 3.32]]) {
+    b.add(0, y, 32, width, 0.16, width, 'granite');
+    b.add(0, y + 0.135, 32, width + 0.04, 0.025, width + 0.04, 'mausPolished', false);
+    // Fine joints between stone slabs, kept flush with the tread.
+    for (const side of [-1, 1])
+      b.add(side * 1.35, y + 0.161, 32, 0.018, 0.006, width, 'mausStone', false);
+  }
+  b.add(0, 3.48, 32, 2.15, 0.72, 2.15, 'mausStone');
+  b.add(0, 4.2, 32, 2.3, 0.12, 2.3, 'mausPolished');
+  b.add(0, 4.32, 32, 1.05, 0.10, 1.05, 'palaceMetal', false);
+  b.add(0, 4.42, 32, 0.72, 0.43, 0.72, 'civicWhite', false, 'cylinder');
+  for (const y of [4.42, 4.76])
+    b.add(0, y, 32, 0.82, 0.055, 0.82, 'palaceMetal', false, 'cylinder');
+  for (const dx of [-0.4, 0.4]) for (const dz of [-0.4, 0.4]) {
+    b.add(dx, 4.42, 32 + dz, 0.075, 0.07, 0.075, 'palaceMetal', false, 'cylinder');
+    b.add(dx, 4.49, 32 + dz, 0.11, 0.035, 0.11, 'civicWhite', false, 'cylinder');
+  }
   // Thân cột cờ trắng cao vút gần 30 mét
   b.add(0, 4.85, 32.0, 0.42, 10.0, 0.42, 'civicWhite', false, 'cylinder');
   b.add(0, 14.85, 32.0, 0.32, 12.0, 0.32, 'civicWhite', false, 'cylinder');
@@ -108,11 +121,11 @@ export function mausoleumExterior(b, floor) {
   b.add(0, 26.85, 32.0, 0.65, 0.75, 0.65, 'bronze', false, 'sphere');
   // Đại kỳ Tổ quốc đỏ sao vàng bay phấp phới trên đỉnh cột cờ trung tâm
   b.label('', 2.3, 23.5, 32.0, 4.6, 3.1, 'national-flag');
-  // 4 cột trụ đèn đồng nghi lễ tại 4 góc chân bệ cột cờ
-  for (const dx of [-2.2, 2.2]) {
-    for (const dz of [-2.2, 2.2]) {
-      b.add(dx, 3.45, 32.0 + dz, 0.16, 1.6, 0.16, 'bronze', false);
-      b.add(dx, 5.05, 32.0 + dz, 0.38, 0.38, 0.38, 'lamp', false, 'sphere');
+  // Discreet ground-mounted uplights outside the steps.
+  for (const dx of [-3.45, 3.45]) {
+    for (const dz of [-3.45, 3.45]) {
+      b.add(dx, 3.02, 32 + dz, 0.34, 0.12, 0.34, 'palaceMetal', false, 'cylinder');
+      b.add(dx, 3.14, 32 + dz, 0.22, 0.025, 0.22, 'lamp', false, 'cylinder');
     }
   }
 
