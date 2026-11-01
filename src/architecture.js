@@ -3,6 +3,9 @@ import { addModelInstances, MODEL_URLS } from "./models.js";
 import { BUILDINGS } from "../shared/architecture.mjs";
 import { makeMaterials, flagCanvas } from "./materials.js";
 import { heritageMaterials, heritageGeometries } from "./heritage.js";
+import partyFlagUrl from "./assets/party-flag.jpg";
+
+let partyFlagTexture;
 function roofGeometry(pediment = false) {
   const s = new THREE.Shape();
   s.moveTo(-0.5, 0);
@@ -145,9 +148,17 @@ function nationalEmblemCanvas() {
 }
 
 function labelTexture(label) {
+  if (label.kind === "party-flag") {
+    if (!partyFlagTexture) {
+      partyFlagTexture = new THREE.TextureLoader().load(partyFlagUrl);
+      partyFlagTexture.colorSpace = THREE.SRGBColorSpace;
+      partyFlagTexture.anisotropy = 4;
+    }
+    return partyFlagTexture;
+  }
   let canvas;
-  if (label.kind === "national-flag" || label.kind === "party-flag")
-    canvas = flagCanvas(label.kind === "party-flag");
+  if (label.kind === "national-flag")
+    canvas = flagCanvas();
   else if (label.kind === "national-emblem")
     canvas = nationalEmblemCanvas();
   else {
@@ -741,7 +752,7 @@ export class ArchitectureRenderer {
       }
       for (const l of b.labels) {
         const mesh = new THREE.Mesh(
-          new THREE.PlaneGeometry(l.width, l.height),
+          new THREE.PlaneGeometry(l.width, l.kind === "party-flag" ? l.width * 2 / 3 : l.height),
           new THREE.MeshBasicMaterial({
             map: labelTexture(l),
             transparent:

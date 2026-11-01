@@ -209,7 +209,7 @@ export function makeMaterials() {
   });
   return materials;
 }
-export function flagCanvas(party = false) {
+export function flagCanvas() {
   const c = document.createElement("canvas");
   c.width = 384;
   c.height = 256;
@@ -217,12 +217,7 @@ export function flagCanvas(party = false) {
   g.fillStyle = "#b5252b";
   g.fillRect(0, 0, 384, 256);
   g.fillStyle = "#f9d560";
-  if (party) {
-    g.font = "175px Georgia";
-    g.textAlign = "center";
-    g.textBaseline = "middle";
-    g.fillText("☭", 192, 135);
-  } else {
+  {
     g.beginPath();
     for (let i = 0; i < 10; i++) {
       const r = i % 2 ? 29 : 73,
