@@ -293,6 +293,7 @@ function enterSoloMode(name, action = "create") {
   $("welcome").hidden = true;
   $("rooms-modal").hidden = true;
   $("hud").hidden = false;
+  chatLog.scrollToLatest();
   $("connection").textContent = "Tham quan di sản";
   $("online").textContent = "1 người";
   $("quality").dispatchEvent(new Event("change"));
@@ -329,6 +330,7 @@ async function enterGame(name, action = "create", roomId = null) {
     $("welcome").hidden = true;
     $("rooms-modal").hidden = true;
     $("hud").hidden = false;
+    chatLog.scrollToLatest();
     $("quality").dispatchEvent(new Event("change"));
     canvas.focus();
     lastMouse = null;
