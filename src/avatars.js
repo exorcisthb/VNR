@@ -3,19 +3,15 @@ import { flagCanvas } from "./materials.js";
 const cube = new THREE.BoxGeometry(1, 1, 1),
   sphere = new THREE.SphereGeometry(0.5, 12, 8),
   cylinder = new THREE.CylinderGeometry(0.5, 0.5, 1, 8);
-function fptTexture(back = false) {
+function fptTexture() {
   const c = document.createElement("canvas");
   c.width = 256;
   c.height = 160;
   const g = c.getContext("2d");
-  g.fillStyle = "#ef7d2d";
-  g.fillRect(0, 0, 256, 160);
   g.textAlign = "center";
   g.fillStyle = "#ffffff";
-  g.font = "bold italic 82px Arial";
-  g.fillText("FPT", 128, 95);
-  g.font = "20px Arial";
-  g.fillText("UNIVERSITY", 128, 129);
+  g.font = "900 italic 112px Arial";
+  g.fillText("FPT", 124, 120);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
@@ -24,17 +20,23 @@ const shirtMap = fptTexture(),
   flagMap = new THREE.CanvasTexture(flagCanvas());
 flagMap.colorSpace = THREE.SRGBColorSpace;
 export function createCharacter(role = "student") {
+  const isHost = role === "host";
+  const ownedGeometries = [];
   const group = new THREE.Group(),
     skin = new THREE.MeshStandardMaterial({ color: "#cba27e", roughness: 1 }),
     hair = new THREE.MeshStandardMaterial({ color: "#252521", roughness: 1 }),
     shirt = new THREE.MeshStandardMaterial({
-      color: role === "host" ? "#264a48" : "#ed7a2e",
+      color: isHost ? "#f4f5f4" : "#f57413",
       roughness: 0.95,
     }),
     pants = new THREE.MeshStandardMaterial({ color: "#24292b", roughness: 1 }),
-    shoe = new THREE.MeshStandardMaterial({ color: "#e1ddcb", roughness: 0.9 }),
+    shoe = new THREE.MeshStandardMaterial({ color: isHost ? "#202326" : "#eeeae1", roughness: 0.9 }),
     dark = new THREE.MeshStandardMaterial({ color: "#303c35", roughness: 1 }),
-    materials = [skin, hair, shirt, pants, shoe, dark];
+    white = new THREE.MeshStandardMaterial({ color: "#fafaf6", roughness: 0.85 }),
+    seam = new THREE.MeshStandardMaterial({ color: isHost ? "#cbd1d1" : "#d5570a", roughness: 1 }),
+    bagFabric = new THREE.MeshStandardMaterial({ color: "#303741", roughness: 1 }),
+    bagTrim = new THREE.MeshStandardMaterial({ color: "#59616a", roughness: 0.9 }),
+    materials = [skin, hair, shirt, pants, shoe, dark, white, seam, bagFabric, bagTrim];
   function part(parent, size, pos, mat, geometry = cube) {
     const m = new THREE.Mesh(geometry, mat);
     m.position.set(...pos);
@@ -44,7 +46,55 @@ export function createCharacter(role = "student") {
     parent.add(m);
     return m;
   }
-  part(group, [0.48, 0.57, 0.28], [0, 1.12, 0], shirt);
+  const torso = part(group, [0.48, 0.57, 0.28], [0, 1.12, 0], shirt);
+  torso.name = isHost ? 'white-shirt' : 'orange-polo';
+  // The collar belongs to the torso, so looking up/down does not move it.
+  part(group, [0.235, 0.055, 0.225], [0, 1.414, 0], white);
+  if (!isHost) part(group, [0.205, 0.057, 0.195], [0, 1.423, 0], shirt);
+  for (const side of [-1, 1]) {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute([
+      side * 0.025, 1.438, -0.115,
+      side * 0.142, 1.405, -0.145,
+      side * 0.080, 1.333, -0.163,
+    ], 3));
+    if (side < 0) geometry.setIndex([0, 2, 1]);
+    else geometry.setIndex([0, 1, 2]);
+    geometry.computeVertexNormals();
+    const collarMaterial = new THREE.MeshStandardMaterial({ color: isHost ? '#fafbfa' : '#fbfbf2', roughness: 0.95, side: THREE.DoubleSide });
+    materials.push(collarMaterial);
+    ownedGeometries.push(geometry);
+    const leaf = new THREE.Mesh(geometry, collarMaterial);
+    leaf.name = 'collar';
+    group.add(leaf);
+    if (!isHost) {
+      // Orange collar leaves with a narrow white edge, matching the polo.
+      const inner = geometry.clone();
+      const points = inner.attributes.position;
+      const center = new THREE.Vector3();
+      for (let i = 0; i < points.count; i++) center.add(new THREE.Vector3().fromBufferAttribute(points, i));
+      center.divideScalar(points.count);
+      for (let i = 0; i < points.count; i++) {
+        const point = new THREE.Vector3().fromBufferAttribute(points, i).sub(center).multiplyScalar(0.84).add(center);
+        points.setXYZ(i, point.x, point.y, point.z - 0.002);
+      }
+      inner.computeVertexNormals();
+      ownedGeometries.push(inner);
+      group.add(new THREE.Mesh(inner, shirt));
+    }
+  }
+  part(group, [isHost ? 0.024 : 0.033, isHost ? 0.48 : 0.14, 0.009], [0, isHost ? 1.10 : 1.32, -0.145], isHost ? white : seam);
+  for (const y of (isHost ? [1.31, 1.22, 1.13, 1.04, 0.95] : [1.34, 1.29]))
+    part(group, [0.010, 0.010, 0.008], [0, y, -0.153], isHost ? seam : white);
+  if (isHost) {
+    // Subtle chest-pocket stitching and a tucked shirt with a dark belt.
+    part(group, [0.105, 0.012, 0.009], [0.133, 1.21, -0.146], seam);
+    part(group, [0.010, 0.092, 0.009], [0.084, 1.17, -0.146], seam);
+    part(group, [0.010, 0.092, 0.009], [0.182, 1.17, -0.146], seam);
+    part(group, [0.105, 0.010, 0.009], [0.133, 1.125, -0.146], seam);
+  }
+  part(group, [0.47, 0.045, 0.285], [0, 0.846, 0], pants);
+  part(group, [0.055, 0.033, 0.012], [0, 0.846, -0.149], bagTrim);
 
   // Đầu và cổ được gom vào nhóm head có khớp xoay tại cổ (neck pivot y = 1.45),
   // cho phép đầu gật lên/xuống theo góc nhìn chuột như Minecraft
@@ -54,7 +104,6 @@ export function createCharacter(role = "student") {
 
   // Cổ và viền cổ áo bao quanh chân cổ
   part(head, [0.16, 0.12, 0.17], [0, 0, 0], skin);
-  part(head, [0.22, 0.08, 0.22], [0, -0.02, 0], shirt);
 
   // Khối đầu da người
   part(head, [0.36, 0.4, 0.34], [0, 0.22, 0], skin);
@@ -78,8 +127,6 @@ export function createCharacter(role = "student") {
   part(head, [0.08, 0.022, 0.025], [0, 0.11, -0.176], dark); // Miệng
   part(head, [0.065, 0.07, 0.04], [0, 0.18, -0.19], skin); // Mũi
 
-  for (const x of [-0.1, 0.1])
-    part(group, [0.16, 0.055, 0.3], [x, 1.39, 0], dark);
   const legs = [],
     arms = [];
   for (const side of [-1, 1]) {
@@ -88,42 +135,46 @@ export function createCharacter(role = "student") {
     group.add(leg);
     part(leg, [0.205, 0.7, 0.23], [0, -0.35, 0], pants);
     part(leg, [0.23, 0.15, 0.34], [0, -0.77, -0.045], shoe);
+    part(leg, [0.232, 0.025, 0.343], [0, -0.832, -0.045], isHost ? dark : white);
     legs.push(leg);
     const arm = new THREE.Group();
     arm.position.set(side * 0.33, 1.35, 0);
     group.add(arm);
     part(arm, [0.16, 0.26, 0.25], [0, -0.12, 0], shirt);
+    part(arm, [0.163, isHost ? 0.012 : 0.018, 0.253], [0, -0.245, 0], isHost ? seam : white);
     part(arm, [0.13, 0.31, 0.15], [0, -0.37, 0], skin);
     part(arm, [0.145, 0.16, 0.18], [0, -0.59, -0.015], skin);
     arms.push(arm);
   }
   group.scale.setScalar(1.0);
-  const chest = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.29, 0.19),
-    new THREE.MeshBasicMaterial({ map: shirtMap }),
-  );
-  chest.position.set(0, 1.2, -0.143);
-  chest.rotation.y = Math.PI;
-  group.add(chest);
-  const back = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.4, 0.26),
-    new THREE.MeshBasicMaterial({ map: shirtMap }),
-  );
-  back.position.set(0, 1.18, 0.143);
-  group.add(back);
+  if (!isHost) {
+    const logoGeometry = new THREE.PlaneGeometry(0.095, 0.053);
+    const logoMaterial = new THREE.MeshStandardMaterial({ map: shirtMap, transparent: true, roughness: 0.95, depthWrite: false });
+    ownedGeometries.push(logoGeometry); materials.push(logoMaterial);
+    const chest = new THREE.Mesh(logoGeometry, logoMaterial);
+    chest.name = 'fpt-chest-logo';
+    chest.position.set(0.115, 1.265, -0.146);
+    chest.rotation.y = Math.PI;
+    group.add(chest);
 
-  // Balo đeo sau lưng đặc trưng sinh viên (ngăn chính, ngăn phụ, quai đeo vai và quai xách)
-  // Xác định rõ ràng lưng nhân vật nhìn từ góc nhìn thứ ba
-  part(group, [0.36, 0.44, 0.15], [0, 1.15, 0.19], dark); // Thân balo chính
-  part(group, [0.28, 0.22, 0.06], [0, 1.05, 0.28], dark); // Ngăn khóa kéo ngoài
-  part(group, [0.08, 0.04, 0.04], [0, 1.39, 0.19], dark); // Quai xách trên đỉnh
-  part(group, [0.07, 0.52, 0.32], [-0.13, 1.16, 0], dark); // Quai đeo vai trái
-  part(group, [0.07, 0.52, 0.32], [0.13, 1.16, 0], dark); // Quai đeo vai phải
-
-  // Dây thẻ sinh viên và thẻ tên ở ngực trước
-  part(group, [0.015, 0.29, 0.012], [-0.075, 1.2, -0.15], dark);
-  part(group, [0.015, 0.29, 0.012], [0.075, 1.2, -0.15], dark);
-  part(group, [0.13, 0.18, 0.015], [0, 0.99, -0.16], shoe);
+    const backpack = new THREE.Group();
+    backpack.name = 'student-backpack';
+    group.add(backpack);
+    part(backpack, [0.35, 0.43, 0.17], [0, 1.11, 0.235], bagFabric);
+    part(backpack, [0.29, 0.22, 0.055], [0, 1.025, 0.341], bagFabric);
+    part(backpack, [0.29, 0.012, 0.008], [0, 1.13, 0.373], bagTrim);
+    part(backpack, [0.018, 0.043, 0.012], [0.105, 1.11, 0.38], seam);
+    part(backpack, [0.30, 0.018, 0.012], [0, 1.30, 0.326], bagTrim);
+    for (const side of [-1, 1]) {
+      part(backpack, [0.025, 0.08, 0.035], [side * 0.052, 1.36, 0.23], bagTrim);
+      // Narrow straps follow the outer chest and leave the polo logo visible.
+      part(backpack, [0.032, 0.38, 0.014], [side * 0.192, 1.205, -0.153], bagFabric);
+      part(backpack, [0.035, 0.035, 0.32], [side * 0.192, 1.414, 0.005], bagFabric);
+      part(backpack, [0.032, 0.08, 0.17], [side * 0.192, 1.005, 0.075], bagFabric);
+      part(backpack, [0.044, 0.032, 0.019], [side * 0.192, 1.08, -0.16], bagTrim);
+    }
+    part(backpack, [0.13, 0.025, 0.035], [0, 1.39, 0.23], bagTrim);
+  }
   let flag = null;
   if (role === "host") {
     // Tư thế cánh tay phải giương cao ngọn cờ Tổ quốc DỌC THẲNG ĐỨNG uy nghi ở phía trước người (hướng nhìn trước)
@@ -195,8 +246,7 @@ export function createCharacter(role = "student") {
     materials,
     dispose() {
       for (const m of materials) m.dispose();
-      chest.material.dispose();
-      back.material.dispose();
+      for (const geometry of ownedGeometries) geometry.dispose();
       if (flag) flag.geometry.dispose();
       shadow.geometry.dispose();
     },

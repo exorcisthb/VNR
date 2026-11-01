@@ -30,7 +30,7 @@ Mở **http://127.0.0.1:3000** (hoặc `http://localhost:3000`). Máy khác cùn
 - **Space:** nhảy; **Shift:** đi nhanh; **Enter:** chat; **E:** xem tư liệu; **R:** về điểm xuất phát. Trong phòng viếng, nhân vật chỉ đi bộ.
 - Cuộn chuột chỉnh khoảng cách camera. Camera tự thu gần khi vướng tường/trần. Không còn thanh vật phẩm, đặt hay phá khối.
 - Điện thoại: joystick trái để đi, vuốt khung cảnh để nhìn, nút ↑ để nhảy. Menu có ba mức chất lượng.
-- Người vào đầu tiên là **host cầm cờ Việt Nam**. Người còn lại là **sinh viên FPT áo cam, quần đen**. Khi host rời, người tham gia tiếp theo được chuyển vai trò. Đây là vai trò hiển thị, không phải tài khoản quản trị.
+- Host mặc **sơ mi trắng tay ngắn, quần đen và cầm cờ Việt Nam**. Sinh viên mặc **polo FPT cam viền trắng, quần đen, giày sáng màu và đeo balo phía sau**. Trang phục được dựng theo ảnh tham khảo người dùng cung cấp. Đây là vai trò hiển thị, không phải tài khoản quản trị.
 
 Chùa Một Cột nằm ở phía tây nam (-87, 83), có hồ, trụ đá, đài gỗ, mái cong và cầu thang lên. Khu trống đồng ở phía đông nam (98, 87): riêng thân trống cao **4,2 m**, mặt rộng **7,4 m**, cao hơn nhân vật khoảng 2,45 m. Có đài quan sát cạnh trống để xem hoa văn mặt trên. Cả hai khu nối với đường chính, không đổi map.
 

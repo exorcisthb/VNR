@@ -26,7 +26,7 @@ Phòng họp gợi bàn hội nghị, ghế sáng màu, vật liệu gỗ, phôn
 
 ## Nhân vật
 
-Host cầm cờ Việt Nam; sinh viên mặc polo cam, quần đen, giày và thẻ sinh viên. Dòng chữ FPT UNIVERSITY được vẽ bằng Canvas theo yêu cầu bài tập, không dùng skin của trò chơi khác. Đầu, tay chân, tư thế đi và cờ được dựng/hoạt họa bằng hình học của dự án.
+Host mặc sơ mi trắng tay ngắn, quần đen và cầm cờ Việt Nam. Sinh viên mặc polo cam có viền trắng ở cổ và tay áo, logo FPT nhỏ bên ngực trái, quần đen, giày sáng màu và balo xám đậm phía sau. Trang phục dựng theo ảnh tham khảo người dùng cung cấp; logo chữ FPT được vẽ bằng Canvas. Đầu, tay chân, tư thế đi và cờ được dựng/hoạt họa bằng hình học của dự án.
 
 ## Chùa Một Cột và trống đồng Đông Sơn
 
