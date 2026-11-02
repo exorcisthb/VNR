@@ -8,10 +8,14 @@ test('stairwell guards block all exposed sides while keeping upper landings acce
   for (const [id, stairX, levels] of [['palace', -25, [10, 16]], ['government', -24, [9, 14]]]) {
     const building = BUILDINGS.find(b => b.id === id);
     for (const level of levels) {
-      const position = (dx, z) => ({ x: building.x + stairX + dx, y: level + 0.025, z: building.z + z * building.front });
+      const position = (dx, z, yOffset = 0.025) => ({ x: building.x + stairX + dx, y: level + yOffset, z: building.z + z * building.front });
       for (const z of [-3, 0, 3, 7]) for (const side of [-1, 1])
         assert.equal(collides(emptyWorld, position(side * 1.9, z)), true, `${id} ${level}: unguarded side`);
-      assert.equal(collides(emptyWorld, position(0, 8)), true, `${id} ${level}: unguarded end`);
+      if (level === levels.at(-1)) {
+        assert.equal(collides(emptyWorld, position(0, 8, 1.0)), true, `${id} ${level}: unguarded end on rooftop`);
+      } else {
+        assert.equal(collides(emptyWorld, position(0, 8, 1.0)), false, `${id} ${level}: blocked stair entrance on intermediate floor`);
+      }
       assert.equal(collides(emptyWorld, position(0, -4.8)), false, `${id} ${level}: blocked landing`);
     }
   }

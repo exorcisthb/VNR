@@ -16,7 +16,7 @@ export function governmentPublicInteriors(b, { chair, sofa, table }) {
   };
   // Corridors connect both floors to the existing staircase, outside room walls.
   for (const y of [9, 14]) {
-    for (const x of [-18, 18]) b.add(x, y, -3, 0.24, 4.7, 21, 'ivory');
+    for (const x of [-18, 18]) b.add(x, y, -2.8, 0.25, 4.7, 21.8, 'ivory');
     for (const x of [-12, 0, 12]) lamp(x, y, 10.6);
     for (let x = -16; x < 18; x += 2)
       b.add(x, y, -13.5, 1.8, 1.0, 0.08, 'woodpanel', false);
@@ -24,12 +24,20 @@ export function governmentPublicInteriors(b, { chair, sofa, table }) {
   // Reception room: cream upholstered wooden armchairs, paired central seats,
   // landscape backdrop, low tea tables and two inward-facing guest rows.
   const y = 9, cx = -9.5;
-  b.add(0, y, -2.5, 0.22, 4.7, 21, 'ivory');
-  for (const center of [-9.5, 9.5]) {
-    for (const side of [-1, 1]) b.add(center + side * 4.5, y, 8, 6.5, 4.7, 0.2, 'woodpanel');
-    b.add(center, y + 3.2, 8, 2.5, 1.5, 0.2, 'woodpanel');
-    b.door(center, y, 8, 2.45, 3.1, 0.12);
-  }
+  b.add(0, y, -2.8, 0.25, 4.7, 21.8, 'ivory');
+
+  // Vách mặt trước tầng 2: liên tục từ x=-18.1 đến x=+18.1, khép kín tuyệt đối vào tường bên và tường giữa
+  // Cánh trái (Phòng tiếp khách, x: -18 đến 0):
+  b.add(-14.4, y, 8, 7.4, 4.7, 0.25, 'woodpanel');
+  b.door(-9.5, y, 8, 2.5, 3.15, 0.12);
+  b.add(-9.5, y + 3.15, 8, 2.5, 1.55, 0.25, 'woodpanel');
+  b.add(-4.1, y, 8, 8.4, 4.7, 0.25, 'woodpanel');
+
+  // Cánh phải (Phòng họp trực tuyến, x: 0 đến 18):
+  b.add(4.1, y, 8, 8.4, 4.7, 0.25, 'woodpanel');
+  b.door(9.5, y, 8, 2.5, 3.15, 0.12);
+  b.add(9.5, y + 3.15, 8, 2.5, 1.55, 0.25, 'woodpanel');
+  b.add(14.4, y, 8, 7.4, 4.7, 0.25, 'woodpanel');
   b.add(cx, y + 0.015, -2.5, 13.5, 0.03, 17.5, 'goldCarpet', false);
   b.add(cx, y + 0.4, -13.35, 13.8, 3.8, 0.12, 'walnut', false);
   b.label('Phong cảnh phòng tiếp khách', cx, y + 2.35, -13.25, 13.2, 3.4, 'landscape');
@@ -64,9 +72,10 @@ export function governmentPublicInteriors(b, { chair, sofa, table }) {
   b.room('video-meeting', 'Phòng họp trực tuyến · mô phỏng', 1, -12.8, 17.5, 7.7, y,
     'Không gian hội nghị trực tuyến với bàn họp, micro và màn hình, dựa trên hoạt động họp trực tuyến của Chính phủ được công bố công khai. Không mô tả vị trí phòng thực tế.', MEETING_SOURCE);
   // Information and operations centre: display wall, operator consoles, meeting zone.
-  for (const side of [-1, 1]) b.add(side * 10.5, 14, 8, 14.5, 4.7, 0.22, 'woodpanel');
-  b.add(0, 17.2, 8, 6.4, 1.5, 0.22, 'woodpanel');
+  b.add(-10.6, 14, 8, 15.0, 4.7, 0.25, 'woodpanel');
   b.door(0, 14, 8, 6.2, 3.1, 0.12);
+  b.add(0, 14 + 3.1, 8, 6.2, 1.6, 0.25, 'woodpanel');
+  b.add(10.6, 14, 8, 15.0, 4.7, 0.25, 'woodpanel');
   b.add(0, 14.02, -2.5, 32, 0.025, 20, 'carpet', false);
   for (const x of [-10.1, 0, 10.1]) panel(x, 15.4, -13.12, 9.5, 2.6, 'THÔNG TIN ĐIỀU HÀNH');
   for (const z of [-5.5, 0]) for (const x of [-12, -6, 0, 6, 12]) {

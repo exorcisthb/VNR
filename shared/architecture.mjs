@@ -264,7 +264,7 @@ function stairFlight(b, x, base, startZ, rise = 6, mat = "marble", railMat = "wo
     );
   }
 }
-function upperSlab(b, y, width, depth, stairX) {
+function upperSlab(b, y, width, depth, stairX, isTopFloor = false) {
   const x0 = -width / 2,
     x1 = width / 2,
     a = stairX - 1.9,
@@ -291,7 +291,10 @@ function upperSlab(b, y, width, depth, stairX) {
     rail(stairX + side * 1.9, 2, 0.09, 12);
     rail(stairX + side * 1.55, -4, 0.7, 0.09);
   }
-  rail(stairX, 8, 3.8, 0.09);
+  // Chỉ tầng thượng mới có lan can ngang chắn mép giếng thang; tầng 2 mở thông thoáng để người chơi đi tiếp lên cầu thang
+  if (isTopFloor) {
+    rail(stairX, 8, 3.8, 0.09);
+  }
 }
 function ceiling(b, y, w, d) {
   b.add(0, y, 0, w, 0.22, d, "ivory");
@@ -440,7 +443,7 @@ function makePalace(l) {
   b.steps(0, 19.5, 14, 1, 5, 0.5);
   for (let floor = 0; floor < 3; floor++) {
     const y = f + floor * 6;
-    if (floor) upperSlab(b, y - 0.26, 60, 28, -25);
+    if (floor) upperSlab(b, y - 0.26, 60, 28, -25, floor === 2);
     b.add(0, y, -14, 60, 5.7, 0.32, "ivory");
     for (const x of [-30, 30]) {
       b.add(x, y, 0, 0.32, 0.6, 28, "ivory");
@@ -525,7 +528,7 @@ function makePalace(l) {
     "landscape",
   );
   // Phòng Nội các ở cánh đông, cửa mở về sảnh.
-  b.add(18.7, f, -7, 0.28, 5.7, 13, "woodpanel");
+  b.add(18.7, f, -7.2, 0.28, 5.7, 13.6, "woodpanel");
   b.add(18.7, f, 9, 0.28, 5.7, 10, "woodpanel");
   b.label("PHÒNG NỘI CÁC", 24.5, 7.5, 13.8, 7, 0.6);
   b.add(24.3, f + 0.78, -2, 4.9, 0.18, 12, "lightwood", false, "ovalTable");
@@ -815,7 +818,7 @@ function makeGovernment(l) {
   governmentExterior(b, f);
   for (let floor = 0; floor < 3; floor++) {
     const y = f + floor * 5;
-    if (floor) upperSlab(b, y - 0.26, 56, 28, -24);
+    if (floor) upperSlab(b, y - 0.26, 56, 28, -24, floor === 2);
     b.add(0, y, -14, 56, 4.7, 0.35, "ochre");
     for (const x of [-28, 28]) b.add(x, y, 0, 0.35, 4.7, 28, "ochre");
     for (const side of [-1, 1])
