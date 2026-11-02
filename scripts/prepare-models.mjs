@@ -3,12 +3,12 @@ import { MeshoptSimplifier } from 'meshoptimizer';
 
 // These close-up exhibits need every scan face and UV seam. Permissive
 // simplification opens holes in their thin basin, relief and flower details.
-const fullDetailModels = new Set(['canh gác', 'đài phun nước', 'tranh phòng đại yến', 'xe tăng']);
+const fullDetailModels = new Set(['tượng to bác', 'canh gác', 'đài phun nước', 'tranh phòng đại yến', 'xe tăng']);
 // Keep the original scans in 3D; publish lighter meshes with their original UVs/materials.
 await MeshoptSimplifier.ready;
 await mkdir(new URL('../public/models/', import.meta.url), { recursive: true });
 const selected = process.argv.slice(2);
-for (const [name, target] of [['thamr', 20000], ['hoa sen', 12000], ['đèn chùm', 24000], ['tượng bác', 24000], ['tượng quan âm', 36000], ['thi hài bác', 28000], ['canh gác', null], ['đài phun nước', 40000], ['cây', 30000], ['tranh phòng đại yến', 24000], ['xe tăng', null]]) {
+for (const [name, target] of [['thamr', 20000], ['hoa sen', 12000], ['đèn chùm', 24000], ['tượng bác', 24000], ['tượng to bác', null], ['tượng quan âm', 36000], ['thi hài bác', 28000], ['canh gác', null], ['đài phun nước', 40000], ['cây', 30000], ['tranh phòng đại yến', 24000], ['xe tăng', null]]) {
   if (selected.length && !selected.includes(name)) continue;
   const file = await readFile(new URL(`../3D/${name}.glb`, import.meta.url));
   if (fullDetailModels.has(name)) {

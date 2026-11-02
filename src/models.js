@@ -9,6 +9,7 @@ export const MODEL_URLS = {
   lotus: `${import.meta.env?.BASE_URL ?? '/'}models/hoa%20sen.glb`,
   chandelier: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('đèn chùm.glb')}`,
   hoChiMinhBust: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('tượng bác.glb')}`,
+  largeHoChiMinh: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('tượng to bác.glb')}`,
   quanAmStatue: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('tượng quan âm.glb')}`,
   restingPresident: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('thi hài bác.glb')}`,
   honorGuard: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('canh gác.glb')}`,

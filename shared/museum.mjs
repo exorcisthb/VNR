@@ -1,4 +1,5 @@
 export const MUSEUM_SOURCE = 'https://baotanghochiminh.vn/anh-trung-bay-chuyen-de-nguoi-di-tim-hinh-cua-nuoc.htm';
+import { addMuseumObjects } from './museum-objects.mjs';
 
 export function addMuseumGallery(b) {
   const cx = -43, cz = -4, floor = 3.2;
@@ -39,11 +40,14 @@ export function addMuseumGallery(b) {
     photo.image = image;
     label(title + '\nẢnh: Bảo tàng Hồ Chí Minh · Chuyên đề khai mạc 05/6/2021', x, 3.9, -11.55, 9, 0.85, 'museum-panel');
   }
-  // Central memorial focus with an unobstructed circulation loop around it.
-  add(0, floor, -5.8, 2.3, 0.9, 1.8, 'mausStone');
-  add(0, 4.1, -5.8, 2.4, 0.1, 1.9, 'mausPolished');
-  add(0, 4.2, -5.8, 1.4, 1.7, 0.9, 'bronzeBust', false, 'hoChiMinhBust');
-  label('CHỦ TỊCH HỒ CHÍ MINH', 0, 3.65, -4.88, 2.1, 0.3);
+  // Large supplied scan on the rear wall's centreline; scale uniformly by height.
+  add(0, floor, -10.7, 6.4, 0.55, 2.2, 'mausStone');
+  add(0, 3.75, -10.7, 6.5, 0.15, 2.25, 'mausPolished');
+  add(0, 3.9, -10.7, 5.94, 3.9, 1.64, 'bronzeBust', true, 'collision');
+  b.modelDisplays ??= [];
+  b.modelDisplays.push({ model: 'largeHoChiMinh', loadDistance: 50,
+    placement: { position: [b.x + cx, 3.9, b.z + cz - 10.7], height: 3.9 } });
+  label('CHỦ TỊCH HỒ CHÍ MINH', 0, 3.5, -9.55, 5.5, 0.35);
   // Three interpretive panels follow the broad themes published by the museum.
   for (const [x, title, lines] of [
     [-8, 'CUỘC ĐỜI VÀ SỰ NGHIỆP', 'Tìm hiểu cuộc đời và hoạt động cách mạng của Chủ tịch Hồ Chí Minh.'],
@@ -52,15 +56,8 @@ export function addMuseumGallery(b) {
   ]) {
     add(x, floor, 1.0, 6.5, 2.6, 0.18, 'ivory');
     label(title + '\n' + lines + '\nTư liệu: Bộ Tư lệnh Lăng · Bảo tàng Hồ Chí Minh', x, 4.75, 1.11, 6.1, 2.1, 'museum-panel');
-    // Low glazed study cases contain clearly identified illustrative models.
-    add(x, floor, 3.5, 4.6, 0.8, 1.4, 'walnut');
-    add(x, 4, 3.5, 4.6, 0.5, 1.4, 'glass', false);
-    for (let i = 0; i < 3; i++) {
-      add(x - 1.2 + i * 1.1, 4.03, 3.5, 0.7, 0.09, 0.85, 'ivory', false);
-      add(x - 1.2 + i * 1.1, 4.12, 3.5, 0.65, 0.02, 0.8, i % 2 ? 'curtainRed' : 'ochre', false);
-    }
-    label('MÔ HÌNH MINH HỌA SÁCH, TÀI LIỆU', x, 3.65, 4.22, 4.2, 0.3);
   }
+  addMuseumObjects(b, cx, cz);
   // Warm ceiling lighting and perimeter benches, clear of the entrance route.
   for (const x of [-8, 0, 8]) {
     for (const z of [-6, 5]) {

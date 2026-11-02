@@ -176,7 +176,40 @@ function labelTexture(label) {
     canvas.width = ["lacquer", "banquetPainting"].includes(label.kind) ? 2048 : 1024;
     canvas.height = label.kind === "lacquer" ? 768 : label.kind === "banquetPainting" ? 640 : label.kind === "landscape" ? 384 : 160;
     const c = canvas.getContext("2d");
-    if (label.kind === "museum-panel") {
+    if (["book-cover", "book-pages"].includes(label.kind)) {
+      canvas.width = 512; canvas.height = 768;
+      const cover = label.kind === 'book-cover';
+      c.fillStyle = cover ? (label.coverColor || '#913b32') : '#f0e4c6';
+      c.fillRect(0, 0, 512, 768);
+      if (cover) {
+        c.strokeStyle = '#dcc38d'; c.lineWidth = 3;
+        c.strokeRect(28, 28, 456, 712);
+        c.fillStyle = '#e8d4a2'; c.textAlign = 'center'; c.font = 'bold 46px Arial';
+        const words = label.text.split(' ');
+        let line = '', y = 250;
+        for (const word of words) {
+          if (line && c.measureText(line + ' ' + word).width > 390) {
+            c.fillText(line, 256, y); y += 62; line = word;
+          } else line += (line ? ' ' : '') + word;
+        }
+        c.fillText(line, 256, y);
+        c.font = '22px Arial'; c.fillText('MÔ HÌNH TRƯNG BÀY', 256, 660);
+        for (let i = 0; i < 3; i++) {
+          c.fillStyle = '#ffffff08'; c.fillRect(37 + i * 3, 38, 1, 692);
+        }
+      } else {
+        c.fillStyle = '#6b5543'; c.font = 'bold 21px Arial';
+        c.fillText('TƯ LIỆU MINH HỌA', 42, 67);
+        c.strokeStyle = '#87735c'; c.lineWidth = 2;
+        for (let i = 0; i < 22; i++) {
+          const y = 110 + i * 25;
+          c.beginPath(); c.moveTo(42, y);
+          c.lineTo(430 - (i * 37 % 92), y); c.stroke();
+        }
+        c.fillStyle = '#8e6d4b'; c.font = '18px Arial';
+        c.fillText('Không phải bản chụp hiện vật gốc', 42, 715);
+      }
+    } else if (label.kind === "museum-panel") {
       canvas.width = 1600; canvas.height = Math.round(1600 * label.height / label.width);
       c.fillStyle = '#eee2c9'; c.fillRect(0, 0, canvas.width, canvas.height);
       c.strokeStyle = '#ad874d'; c.lineWidth = 8;
@@ -818,7 +851,8 @@ export class ArchitectureRenderer {
         );
         mesh.position.fromArray(l.position);
         mesh.rotation.y = l.rotationY;
-        if (l.kind === "helipad") mesh.rotation.x = -Math.PI / 2;
+        if (l.rotationX != null) mesh.rotation.x = l.rotationX;
+        else if (l.kind === "helipad") mesh.rotation.x = -Math.PI / 2;
         group.add(mesh);
         if (l.kind === "sign") {
           // Each face has its own orientation so text reads normally from either side.
