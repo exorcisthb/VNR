@@ -339,8 +339,15 @@ function makeMausoleum(l) {
   b.add(0, f + 0.50, -3, 3.6, 0.35, 4.6, "granite");
   b.add(0, f + 0.85, -3, 2.6, 0.25, 3.8, "blackmarble");
 
-  // Đệm nhung đỏ trang nghiêm nâng đỡ thi hài
-  b.add(0, 5.10, -3, 2.05, 0.16, 3.35, "carpet", false);
+  // Giường phủ nhung đỏ nằm trên bệ đá, đệm đỡ sát đáy model.
+  b.add(0, 5.30, -3, 1.8, 0.08, 3.1, "shroudRed", false);
+  b.add(0, 5.38, -3, 1.65, 0.18, 2.94, "shroudRed", false);
+  for (const side of [-1, 1]) {
+    b.add(side * 0.86, 5.38, -3, 0.08, 0.14, 3.1, "shroudRed", false);
+    b.add(side * 0.89, 5.43, -3, 0.025, 0.025, 3.1, "bronze", false);
+  }
+  b.add(0, 5.38, -4.5, 1.8, 0.35, 0.1, "shroudRed", false);
+  b.add(0, 5.38, -1.5, 1.8, 0.20, 0.1, "shroudRed", false);
 
   // 2. Hòm kính pha lê trong suốt với viền bệ đáy và 4 cột góc mạ đồng thếp vàng (nắp kính trong suốt nhìn rõ thi hài)
   b.add(0, 5.30, -3, 2.15, 1.05, 3.5, "glass");
@@ -352,7 +359,7 @@ function makeMausoleum(l) {
   }
 
   // 3. Thi hài Bác Hồ yên nghỉ thanh thản trong bộ quần áo trắng giản dị trang nghiêm
-  b.add(0, 5.35, -3, 0.78, 0.42, 1.95, "whiteUniform", false, "restingPresident");
+  b.add(0, 5.56, -3, 0.78, 0.42, 1.95, "whiteUniform", false, "restingPresident");
 
   // 4. Bốn chiến sĩ Tiêu binh canh gác mặc quân phục màu xanh của Quân đội nhân dân Việt Nam
   for (const x of [-2.9, 2.9]) {
