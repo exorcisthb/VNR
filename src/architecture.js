@@ -4,8 +4,8 @@ import { BUILDINGS } from "../shared/architecture.mjs";
 import { makeMaterials, flagCanvas } from "./materials.js";
 import { heritageMaterials, heritageGeometries } from "./heritage.js";
 import partyFlagUrl from "./assets/party-flag.jpg";
-import museumExhibitionUrl from "./assets/museum-exhibition.jpg";
-import museumJourneyUrl from "./assets/museum-journey.jpg";
+import museumExhibitionUrl from "./assets/museum-exhibition.jpg?inline";
+import museumJourneyUrl from "./assets/museum-journey.jpg?inline";
 import { retryAsset } from "./asset-loading.js";
 
 let partyFlagTexture;
@@ -169,7 +169,8 @@ function labelTexture(label) {
       museumPhotoTextures.set(label.image, texture);
       const url = { 'exhibition.jpg': museumExhibitionUrl, 'journey.jpg': museumJourneyUrl }[label.image];
       retryAsset(() => new THREE.ImageLoader().loadAsync(url)).then(image => {
-        texture.image = image;
+        // Keep GPU storage dimensions stable after the placeholder is uploaded.
+        context.drawImage(image, 0, 0, placeholder.width, placeholder.height);
         texture.needsUpdate = true;
       }).catch(error => {
         status('Ảnh chưa tải được · vui lòng tải lại trang');

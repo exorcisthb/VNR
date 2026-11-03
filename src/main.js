@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import "./style.css";
 import { VoxelWorld, SPAWN } from "../shared/world.mjs";
-import { stepPlayer, cameraDistance } from "../shared/physics.mjs";
+import { stepPlayer, cameraDistance, isJumpRestricted } from "../shared/physics.mjs";
 import { LANDMARKS, visitSpawn } from "../shared/landmarks.mjs";
 import {
   BUILDINGS,
@@ -963,6 +963,8 @@ function frame(now) {
     if (!paused && $("chat-form").hidden && (network.ready || isSolo)) {
       accumulator += dt;
       let steps = 0;
+      const jumpRestricted = isJumpRestricted(p);
+      $("touch-jump").disabled = jumpRestricted;
       const solemn = Math.abs(p.x + 66) < 13 && Math.abs(p.z + 48) < 13;
       while (accumulator >= 1 / 120 && steps++ < 12) {
         stepPlayer(
@@ -971,7 +973,7 @@ function frame(now) {
           {
             x: Number(keys.has("KeyD")) - Number(keys.has("KeyA")) + touch.x,
             z: Number(keys.has("KeyS")) - Number(keys.has("KeyW")) + touch.z,
-            jump: !solemn && (keys.has("Space") || touch.jump),
+            jump: !solemn && !jumpRestricted && (keys.has("Space") || touch.jump),
             sprint:
               !solemn && (keys.has("ShiftLeft") || keys.has("ShiftRight")),
           },

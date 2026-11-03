@@ -1,8 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { BUILDINGS, ROOMS } from '../shared/architecture.mjs';
-import { collides } from '../shared/physics.mjs';
+import { collides, stepPlayer, isJumpRestricted } from '../shared/physics.mjs';
 const emptyWorld = { get: () => 0 };
+
+test('museum blocks jump input while outdoor visitors can still jump', () => {
+  const museum = ROOMS.find(r => r.id === 'museum');
+  const inside = { ...museum.spawn, vy: 0, grounded: true };
+  assert.equal(isJumpRestricted(inside), true);
+  stepPlayer(emptyWorld, inside, { x: 0, z: 0, jump: true }, 1 / 120);
+  assert.ok(inside.vy <= 0, 'museum visitor jumped');
+  const outside = { x: 0, y: 3, z: 0, yaw: 0, vy: 0, grounded: true };
+  assert.equal(isJumpRestricted(outside), false);
+  stepPlayer(emptyWorld, outside, { x: 0, z: 0, jump: true }, 1 / 120);
+  assert.ok(outside.vy > 0, 'outdoor jumping was blocked');
+});
+
+test('red runner covers the mausoleum stairs continuously from landing to plaza', () => {
+  const b = BUILDINGS.find(b => b.id === 'mausoleum');
+  const runner = b.parts.filter(p => p.mat === 'carpet' && p.size[0] === 3.4);
+  for (let z = 12.05; z < 25.95; z += 0.05) {
+    const top = z < 19 ? 4.2 : z < 22.9 ? 3 + 0.2 * (6 - Math.floor((z - 19) / 0.65)) : 3;
+    assert.ok(runner.some(p => Math.abs(p.position[2] - (b.z + z * b.front)) <= p.size[2] / 2 + 0.001 &&
+      p.position[1] + p.size[1] / 2 > top && p.position[1] - p.size[1] / 2 < top + 0.05),
+      `exposed stair at ${z}`);
+  }
+});
 
 test('stairwell guards block all exposed sides while keeping upper landings accessible', () => {
   for (const [id, stairX, levels] of [['palace', -25, [10, 16]], ['government', -24, [9, 14]]]) {

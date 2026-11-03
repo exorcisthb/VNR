@@ -1,5 +1,5 @@
 import { isSolid } from "./blocks.mjs";
-import { nearbySolids } from "./architecture.mjs";
+import { ROOMS, nearbySolids } from "./architecture.mjs";
 import { nearbyTrees } from "./environment.mjs";
 export const RADIUS = 0.29,
   PLAYER_HEIGHT = 1.75,
@@ -84,7 +84,17 @@ export function collides(world, p) {
       return true;
   return false;
 }
+export function isJumpRestricted(p) {
+  const museum = ROOMS.find(room => room.id === "museum");
+  if (!museum) return false;
+  const a = museum.bounds;
+  return p.x >= a[0] - 0.5 && p.x <= a[3] + 0.5 &&
+    p.z >= a[2] - 0.5 && p.z <= a[5] + 0.5 &&
+    p.y >= a[1] - 0.5 && p.y <= a[4];
+}
+
 export function stepPlayer(world, p, input, dt) {
+  const jump = input.jump && !isJumpRestricted(p);
   // Phong cách di chuyển chuẩn Minecraft: mượt mà, tự do 360 độ, điều khiển tự nhiên theo hướng nhìn
   const speed = input.sprint ? 7.2 : 4.8,
     len = Math.hypot(input.x, input.z) || 1,
@@ -96,7 +106,7 @@ export function stepPlayer(world, p, input, dt) {
   // Never snap X to the center: this caused lateral jumps and server corrections.
   const onStair = getStairZone(p);
 
-  if (input.jump && p.grounded) p.vy = 8.3;
+  if (jump && p.grounded) p.vy = 8.3;
   p.vy = Math.max(-26, p.vy - 24 * dt);
   const displacement = { x: dx, z: dz, y: p.vy * dt };
   const wasGrounded = p.grounded;
@@ -154,7 +164,7 @@ export function stepPlayer(world, p, input, dt) {
     // Thuật toán bám mặt sàn khi bước xuống cầu thang và dốc (Step-down):
     // Khi đang bước đi mà rơi khỏi mép bậc thang (chênh lệch độ cao dưới 0.45m),
     // tự động bám xuống mặt bậc dưới, triệt tiêu hoàn toàn hiện tượng bay lơ lửng trên không!
-    if ((wasGrounded || !!onStair || p.grounded) && !input.jump && (axis === "z" || axis === "x")) {
+    if ((wasGrounded || !!onStair || p.grounded) && !jump && (axis === "z" || axis === "x")) {
       const maxDrop = 0.45;
       if (!collides(world, p) && collides(world, { ...p, y: p.y - maxDrop })) {
         let low = p.y - maxDrop, high = p.y;

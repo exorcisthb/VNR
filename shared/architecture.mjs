@@ -390,7 +390,14 @@ function makeMausoleum(l) {
   // Ngoại thất Lăng Bác (Quảng trường Ba Đình):
   // Thảm đỏ lễ tân trang nghiêm từ cửa chính Lăng trải dài xuống các bậc thềm
   b.add(0, 4.22, 15.5, 3.4, 0.02, 7.0, "carpet", false);
-  b.add(0, 3.02, 22.5, 3.4, 0.02, 7.0, "carpet", false);
+  // Connect the runner across every stair tread and riser.
+  for (let i = 0; i < 6; i++) {
+    const z = 19 + (6 - i - 0.5) * 0.65;
+    const top = 3 + 1.2 * (i + 1) / 6;
+    b.add(0, top + 0.018, z, 3.4, 0.012, 0.65, "carpet", false);
+    b.add(0, top - 0.2, z + 0.65 / 2 + 0.006, 3.4, 0.218, 0.012, "carpet", false);
+  }
+  b.add(0, 3.018, 24.45, 3.4, 0.012, 3.1, "carpet", false);
 
   // Đôi Tiêu binh đứng nghiêm trang gác hai bên thảm đỏ tại cửa Lăng
   b.add(-2.4, f, 12.4, 0.52, 1.80, 0.52, "armyUniform", false, "honorGuard");
