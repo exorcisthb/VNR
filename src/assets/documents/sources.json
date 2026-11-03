@@ -1,0 +1,107 @@
+{
+  "palace": {
+    "url": "https://cdn.nhandan.vn/images/HqGuejFdiPxvv0NpYIJhFdnms8b0j2_8-efT6YNzOLSPkq39rDMl_c3ZdHOJ_tG9CzZBMMgU4U1b1JZyUCbsEA/a1-9648-2051.jpg",
+    "file": "palace.jpg",
+    "caption": "Mặt tiền Dinh Độc Lập, ảnh chụp tháng 4/2025.",
+    "credit": "Báo Nhân Dân",
+    "page": "https://nhandan.vn/post-873936.html"
+  },
+  "reception": {
+    "url": "https://cdn.nhandan.vn/images/HqGuejFdiPxvv0NpYIJhFdnms8b0j2_8-efT6YNzOLQkN1n6hcMucxouauJc4FAR1A3tezT_pE52Po7Ra5JRpw/dat-38-9220-8294.jpg",
+    "file": "reception.jpg",
+    "caption": "Phòng Khánh tiết tại Dinh Độc Lập.",
+    "credit": "Báo Nhân Dân",
+    "page": "https://nhandan.vn/post-873936.html"
+  },
+  "banquet": {
+    "url": "https://cdn.nhandan.vn/images/HqGuejFdiPxvv0NpYIJhFdnms8b0j2_8-efT6YNzOLSf17RjA2zXsthJ4MFc-YQV0DR7s7cvDKc5TfLovHUZag/dat-28-9421-7587.jpg",
+    "file": "banquet.jpg",
+    "caption": "Phòng Đại yến tại Dinh Độc Lập.",
+    "credit": "Báo Nhân Dân",
+    "page": "https://nhandan.vn/post-873936.html"
+  },
+  "cabinet": {
+    "url": "https://cdn.nhandan.vn/images/HqGuejFdiPxvv0NpYIJhFdnms8b0j2_8-efT6YNzOLT4etLe7tHqzp7DNbrqE2DG8zJrGZnOSMsFy88hOH90MA/dat-32-7950-84.jpg",
+    "file": "cabinet.jpg",
+    "caption": "Phòng Nội các tại Dinh Độc Lập.",
+    "credit": "Báo Nhân Dân",
+    "page": "https://nhandan.vn/post-873936.html"
+  },
+  "president-office": {
+    "url": "https://cdn.nhandan.vn/images/HqGuejFdiPxvv0NpYIJhFdnms8b0j2_8-efT6YNzOLQpk611NgHt8pxg0vIRCU3J4PKk_lfvDpZWZxE1ugOouQ/dat-58-2411-3508.jpg",
+    "file": "president-office.jpg",
+    "caption": "Phòng làm việc Tổng thống tại Dinh Độc Lập.",
+    "credit": "Báo Nhân Dân",
+    "page": "https://nhandan.vn/post-873936.html"
+  },
+  "credentials": {
+    "url": "https://media.vietnamplus.vn/images/782b75656060bb88d3da0b5dc4f78d7ca8499b28ee6f8a9dcebdd9b5830ac965b8dfd53bc5b63931a29eedf71b55d9f7cdb57feb901aea868e56e8a402356a73/vnp-dinh-doc-lap-1-21.jpg",
+    "file": "credentials.jpg",
+    "caption": "Phòng Trình Quốc thư tại Dinh Độc Lập.",
+    "credit": "VietnamPlus / Thông tấn xã Việt Nam",
+    "page": "https://www.vietnamplus.vn/dinh-doc-lap-bieu-tuong-lich-su-vinh-cuu-cua-tp-ho-chi-minh-va-cua-dan-toc-post1027664.vnp"
+  },
+  "mausoleum": {
+    "url": "https://hochiminh.vn/upload/3000001/20251024/8705f012a6ad52432af82f0f8caa6caattxvnlangc-1589207452-48.jpg",
+    "file": "mausoleum.jpg",
+    "caption": "Lăng Chủ tịch Hồ Chí Minh tại Quảng trường Ba Đình (ảnh bên ngoài).",
+    "credit": "Trang thông tin Hồ Chí Minh",
+    "page": "https://hochiminh.vn/tin-tuc/lang-bac-ho-7778"
+  },
+  "tank": {
+    "url": "https://dsvh.gov.vn/ckfinder/userfiles/images/Thong%20tin%20ds/B%E1%BA%A3o%20v%E1%BA%ADt%20QG/Xe%20tang%20390.jpg",
+    "file": "tank.jpg",
+    "caption": "Xe tăng T59 số hiệu 390 — hiện vật được công nhận là bảo vật quốc gia.",
+    "credit": "Cục Di sản văn hóa",
+    "page": "https://dsvh.gov.vn/xe-tang-t59-so-hieu-390-3035"
+  },
+  "pagoda": {
+    "url": "https://visitbadinh.com.vn/DataFiles/2023/12/Places/20231214-104325-GaqZTEsg.webp",
+    "file": "pagoda.webp",
+    "caption": "Chùa Một Cột — Liên Hoa Đài tại Hà Nội.",
+    "credit": "Cổng thông tin du lịch Ba Đình",
+    "page": "https://visitbadinh.com.vn/vi/place/details/chua-mot-cot-6"
+  },
+  "drum": {
+    "url": "https://baotanglichsu.vn/DataFiles/Uploaded/image/ngoc-lu8.gif",
+    "file": "drum.gif",
+    "caption": "Trống đồng Ngọc Lũ — hiện vật văn hóa Đông Sơn dùng để tham khảo cho mô hình trống trong game.",
+    "credit": "Bảo tàng Lịch sử Quốc gia",
+    "page": "https://baotanglichsu.vn/vi/Articles/1001/13602/gioi-thieu-bao-vat-quoc-gia-1-trong-djong-ngoc-lu-hien-vat-tieu-bieu-nhat-cua-nen-van-hoa-djong-son.html"
+  },
+  "government": {
+    "url": "https://bcp.cdnchinhphu.vn/thumb_w/777/334894974524682240/2024/5/4/img4477-17147849902311006064929.jpg",
+    "file": "government.jpg",
+    "caption": "Không gian phiên họp Chính phủ thường kỳ tháng 4/2024 tại Trụ sở Chính phủ.",
+    "credit": "Báo Điện tử Chính phủ",
+    "page": "https://baochinhphu.vn/thu-tuong-chu-tri-phien-hop-chinh-phu-thuong-ky-thang-4-voi-nhieu-noi-dung-quan-trong-102240504081250822.htm"
+  },
+  "office": {
+    "url": "https://bcp.cdnchinhphu.vn/thumb_w/777/334894974524682240/2024/8/6/img7888-17229434125341555422628.jpg",
+    "file": "office.jpg",
+    "caption": "Phòng tiếp khách tại Trụ sở Chính phủ trong buổi tiếp Bộ trưởng Quốc phòng Nhật Bản, ngày 6/8/2024.",
+    "credit": "Báo Điện tử Chính phủ",
+    "page": "https://baochinhphu.vn/thu-tuong-pham-minh-chinh-tiep-bo-truong-quoc-phong-nhat-ban-102240806182511406.htm"
+  },
+  "video-meeting": {
+    "url": "https://bcp.cdnchinhphu.vn/thumb_w/777/Uploaded/tranducmanh/2019_03_30/NXPkiemtra.jpg",
+    "file": "video-meeting.jpg",
+    "caption": "Kiểm tra hệ thống hội nghị truyền hình trực tuyến của Chính phủ — ảnh tư liệu trong bài về họp trực tuyến 63 địa phương.",
+    "credit": "Báo Điện tử Chính phủ",
+    "page": "https://baochinhphu.vn/ngay-nay-10-nam-truoc-hoi-nghi-truyen-hinh-truc-tuyen-dau-tien-cua-chinh-phu-voi-63-dia-phuong-102253993.htm"
+  },
+  "operations": {
+    "url": "https://bcp.cdnchinhphu.vn/thumb_w/777/Uploaded/buithuhuong/2020_08_18/NQH03380.JPG",
+    "file": "operations.jpg",
+    "caption": "Trung tâm Thông tin, chỉ đạo, điều hành trong lễ khai trương năm 2020.",
+    "credit": "Báo Điện tử Chính phủ",
+    "page": "https://baochinhphu.vn/khai-truong-trung-tam-thong-tin-chi-dao-dieu-hanh-va-he-thong-thong-tin-bao-cao-quoc-gia-102277748.htm"
+  },
+  "museum": {
+    "url": "https://baotanghochiminh.vn/pic/Product/DSC620_637659398391527985_HasThumb.jpg",
+    "file": "museum.jpg",
+    "caption": "Không gian trưng bày chuyên đề “Người đi tìm hình của Nước” tại Bảo tàng Hồ Chí Minh.",
+    "credit": "Bảo tàng Hồ Chí Minh",
+    "page": "https://baotanghochiminh.vn/anh-trung-bay-chuyen-de-nguoi-di-tim-hinh-cua-nuoc.htm"
+  }
+}

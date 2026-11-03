@@ -14,6 +14,7 @@ import { Network } from "./network.js";
 import { Avatars } from "./avatars.js";
 import { ChatLog, opensChat } from "./chat-log.js";
 import { configuredServerEndpoints } from "./server-endpoints.js";
+import { documentPhoto } from "./document-photos.js";
 import { ArchitectureRenderer } from "./architecture.js";
 import { addScenery } from "./scenery.js";
 const $ = (id) => document.getElementById(id),
@@ -558,8 +559,21 @@ function locationDocument(show) {
   if (show) {
     const source = currentRoom || currentLandmark;
     $("document-title").textContent = (source.name || "").normalize("NFC");
+    $("location-document").querySelector(".document-card").scrollTop = 0;
     $("document-description").textContent = (source.description || "").normalize("NFC");
     $("document-source").href = source.source;
+    const photo = documentPhoto(source);
+    $("document-photo").hidden = !photo;
+    $("document-image").hidden = true;
+    if (photo) {
+      $("document-photo-status").hidden = false;
+      $("document-photo-status").textContent = "Đang tải ảnh thực tế…";
+      $("document-image").alt = photo.caption;
+      $("document-image").src = photo.src;
+      $("document-photo-caption").textContent = photo.caption;
+      $("document-photo-source").textContent = "Ảnh: " + photo.credit + " ↗";
+      $("document-photo-source").href = photo.page;
+    } else $("document-image").removeAttribute("src");
     document.exitPointerLock?.();
     $("document-close").focus();
   } else {
@@ -568,6 +582,15 @@ function locationDocument(show) {
   }
 }
 $("document-close").addEventListener("click", () => locationDocument(false));
+$("document-image").addEventListener("load", () => {
+  $("document-image").hidden = false;
+  $("document-photo-status").hidden = true;
+});
+$("document-image").addEventListener("error", () => {
+  $("document-image").hidden = true;
+  $("document-photo-status").hidden = false;
+  $("document-photo-status").textContent = "Chưa tải được ảnh. Bạn có thể xem ảnh tại liên kết nguồn bên dưới.";
+});
 $("menu-button").addEventListener("click", () => menu(!paused));
 $("resume").addEventListener("click", () => menu(false));
 $("leave").addEventListener("click", () => {
