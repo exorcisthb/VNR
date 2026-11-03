@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { flagCanvas } from "./materials.js";
 const cube = new THREE.BoxGeometry(1, 1, 1),
   sphere = new THREE.SphereGeometry(0.5, 12, 8),
@@ -16,6 +17,33 @@ function fptTexture() {
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
+function backpackBadgeTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512; canvas.height = 256;
+  const g = canvas.getContext('2d');
+  // Embroidered gold/orange bird emblem above the university wordmark.
+  g.save(); g.translate(256, 78);
+  g.lineJoin = 'round'; g.lineWidth = 8; g.strokeStyle = '#f5f0dc';
+  g.fillStyle = '#efb92d';
+  g.beginPath();
+  g.moveTo(-53, 35); g.bezierCurveTo(10, 52, 66, 25, 54, -24);
+  g.bezierCurveTo(45, -62, 9, -65, -4, -42);
+  g.bezierCurveTo(24, -49, 39, -23, 18, -8);
+  g.lineTo(-9, -29); g.lineTo(-2, -3); g.lineTo(-43, -15);
+  g.lineTo(-27, 10); g.lineTo(-64, 13); g.closePath(); g.stroke(); g.fill();
+  g.strokeStyle = '#d75524'; g.lineWidth = 7;
+  g.beginPath(); g.moveTo(-38, 28); g.bezierCurveTo(7, 27, 43, 12, 30, -20); g.stroke();
+  g.fillStyle = '#242420'; g.beginPath(); g.arc(16, -35, 3, 0, Math.PI * 2); g.fill();
+  g.restore();
+  g.fillStyle = '#f4f2e9'; g.textAlign = 'center';
+  g.font = 'bold 42px Georgia'; g.fillText('FPT UNIVERSITY', 256, 181);
+  g.strokeStyle = '#ed6c20'; g.lineWidth = 4;
+  g.beginPath(); g.moveTo(27, 210); g.quadraticCurveTo(256, 224, 485, 210); g.stroke();
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+const backpackBadgeMap = backpackBadgeTexture();
 const shirtMap = fptTexture(),
   flagMap = new THREE.CanvasTexture(flagCanvas());
 flagMap.colorSpace = THREE.SRGBColorSpace;
@@ -34,8 +62,8 @@ export function createCharacter(role = "student") {
     dark = new THREE.MeshStandardMaterial({ color: "#303c35", roughness: 1 }),
     white = new THREE.MeshStandardMaterial({ color: "#fafaf6", roughness: 0.85 }),
     seam = new THREE.MeshStandardMaterial({ color: isHost ? "#cbd1d1" : "#d5570a", roughness: 1 }),
-    bagFabric = new THREE.MeshStandardMaterial({ color: "#303741", roughness: 1 }),
-    bagTrim = new THREE.MeshStandardMaterial({ color: "#59616a", roughness: 0.9 }),
+    bagFabric = new THREE.MeshStandardMaterial({ color: "#171a19", roughness: 1 }),
+    bagTrim = new THREE.MeshStandardMaterial({ color: "#343936", roughness: 0.9 }),
     materials = [skin, hair, shirt, pants, shoe, dark, white, seam, bagFabric, bagTrim];
   function part(parent, size, pos, mat, geometry = cube) {
     const m = new THREE.Mesh(geometry, mat);
@@ -160,20 +188,39 @@ export function createCharacter(role = "student") {
     const backpack = new THREE.Group();
     backpack.name = 'student-backpack';
     group.add(backpack);
-    part(backpack, [0.35, 0.43, 0.17], [0, 1.11, 0.235], bagFabric);
-    part(backpack, [0.29, 0.22, 0.055], [0, 1.025, 0.341], bagFabric);
-    part(backpack, [0.29, 0.012, 0.008], [0, 1.13, 0.373], bagTrim);
-    part(backpack, [0.018, 0.043, 0.012], [0.105, 1.11, 0.38], seam);
-    part(backpack, [0.30, 0.018, 0.012], [0, 1.30, 0.326], bagTrim);
+    const rounded = new RoundedBoxGeometry(1, 1, 1, 3, 0.16);
+    ownedGeometries.push(rounded);
+    const piping = new THREE.MeshStandardMaterial({ color: '#ef721e', roughness: 0.9 });
+    const badgeMaterial = new THREE.MeshStandardMaterial({ map: backpackBadgeMap, transparent: true, roughness: 1 });
+    materials.push(piping, badgeMaterial);
+    // Tall black pack, curved top and raised front compartments like the reference.
+    part(backpack, [0.405, 0.56, 0.185], [0, 1.135, 0.245], bagTrim, rounded);
+    part(backpack, [0.385, 0.54, 0.19], [0, 1.135, 0.254], bagFabric, rounded);
+    part(backpack, [0.265, 0.49, 0.043], [0, 1.12, 0.349], bagTrim, rounded);
+    part(backpack, [0.253, 0.475, 0.048], [0, 1.12, 0.355], bagFabric, rounded);
+    const badgeGeometry = new THREE.PlaneGeometry(0.244, 0.122);
+    ownedGeometries.push(badgeGeometry);
+    part(backpack, [1, 1, 1], [0, 1.315, 0.381], badgeMaterial, badgeGeometry).name = 'backpack-university-badge';
+    for (const [y, height] of [[1.165, 0.15], [1.002, 0.15], [0.892, 0.065]]) {
+      part(backpack, [0.252, height, 0.037], [0, y, 0.389], bagFabric, rounded);
+      const zipperY = y + height / 2 - 0.008;
+      part(backpack, [0.235, 0.006, 0.008], [0, zipperY, 0.410], piping, rounded);
+      part(backpack, [0.012, 0.022, 0.008], [0.099, zipperY - 0.011, 0.418], bagTrim, rounded);
+    }
     for (const side of [-1, 1]) {
-      part(backpack, [0.025, 0.08, 0.035], [side * 0.052, 1.36, 0.23], bagTrim);
+      // Side mesh pockets and stitched vertical borders.
+      part(backpack, [0.048, 0.20, 0.13], [side * 0.205, 1.005, 0.265], bagTrim, rounded);
+      for (let j = 0; j < 5; j++)
+        part(backpack, [0.003, 0.15, 0.005], [side * 0.231, 1.005, 0.225 + j * 0.02], bagFabric);
+      part(backpack, [0.009, 0.39, 0.008], [side * 0.147, 1.12, 0.357], bagTrim, rounded);
+      part(backpack, [0.025, 0.055, 0.035], [side * 0.052, 1.425, 0.23], bagFabric, rounded);
       // Narrow straps follow the outer chest and leave the polo logo visible.
       part(backpack, [0.032, 0.38, 0.014], [side * 0.192, 1.205, -0.153], bagFabric);
       part(backpack, [0.035, 0.035, 0.32], [side * 0.192, 1.414, 0.005], bagFabric);
       part(backpack, [0.032, 0.08, 0.17], [side * 0.192, 1.005, 0.075], bagFabric);
       part(backpack, [0.044, 0.032, 0.019], [side * 0.192, 1.08, -0.16], bagTrim);
     }
-    part(backpack, [0.13, 0.025, 0.035], [0, 1.39, 0.23], bagTrim);
+    part(backpack, [0.13, 0.025, 0.035], [0, 1.455, 0.23], bagFabric, rounded);
   }
   let flag = null;
   if (role === "host") {
