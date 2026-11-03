@@ -545,13 +545,17 @@ function menu(show) {
 }
 function locationDocument(show) {
   if (!playing) return;
+  if (show) {
+    // Refresh at the current position so E follows the same visibility as the HUD card.
+    updateInfo();
+    if ($("landmark-card").hidden) return;
+  }
   paused = show;
   wantsLook = !show;
   clearInput();
   $("location-document").hidden = !show;
   $("mouse-hint").hidden = true;
   if (show) {
-    updateInfo();
     const source = currentRoom || currentLandmark;
     $("document-title").textContent = (source.name || "").normalize("NFC");
     $("document-description").textContent = (source.description || "").normalize("NFC");

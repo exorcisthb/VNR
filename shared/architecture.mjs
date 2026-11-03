@@ -8,9 +8,9 @@ import { addMuseumGallery } from "./museum.mjs";
 // Các cấu kiện dùng chung cho hiển thị và va chạm, đơn vị mét trong bản mô phỏng.
 // Bố trí phòng được rút gọn để tham quan, không phải bản vẽ hoàn công.
 const MAUS_SOURCE =
-  "https://btllang.bqp.vn/tin-tuc/tin-tu-bo-tu-lenh-lang/4157-y-nghia-chinh-tri-van-hoa-cua-cong-trinh-lang-va-viec-phat-huy-y-nghia-chinh-tri-van-hoa-cua-cong-trinh-lang-trong-giai-doan-moi.html";
+  "https://hochiminh.vn/tin-tuc/lang-bac-ho-7778";
 const PALACE_SOURCE =
-  "https://dinhdoclap.gov.vn/anh-dinh-doc-lap-noi-luu-giu-dau-an-sau-50-nam-giai-phong/";
+  "https://dsvh.gov.vn/di-tich-lich-su-dinh-doc-lap-2937";
 const GOV_SOURCE =
   "https://baochinhphu.vn/thu-tuong-chu-tri-phien-hop-chinh-phu-thuong-ky-thang-4-voi-nhieu-noi-dung-quan-trong-102240504081250822.htm";
 
@@ -808,7 +808,7 @@ function makePalace(l) {
     11,
     10,
     "Phòng tiếp nhận quốc thư được gợi lại bằng dãy ghế tiếp khách, thảm và mảng trang trí sơn mài tự tạo; không sao chép nguyên tác mỹ thuật.",
-    "https://dinhdoclap.gov.vn/kien-truc-dinh-doc-lap/",
+    "https://dsvh.gov.vn/di-tich-lich-su-dinh-doc-lap-2937",
   );
   b.room(
     "banquet",

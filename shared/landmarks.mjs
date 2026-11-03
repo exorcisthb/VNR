@@ -15,7 +15,7 @@ export const LANDMARKS = [
     description:
       "Khánh thành ngày 29/8/1975 tại Quảng trường Ba Đình, Hà Nội; đây là nơi gìn giữ lâu dài thi hài Chủ tịch Hồ Chí Minh.",
     source:
-      "https://btllang.bqp.vn/tin-tuc/tin-tu-bo-tu-lenh-lang/11238-ban-quan-ly-lang-chu-tich-ho-chi-minh-va-dau-an-cua-truong-ban-dau-tien.html",
+      "https://hochiminh.vn/tin-tuc/lang-bac-ho-7778",
   },
   {
     id: "palace",
@@ -28,7 +28,7 @@ export const LANDMARKS = [
     sign: { x: 82, z: 9 },
     description:
       "Công trình do kiến trúc sư Ngô Viết Thụ thiết kế, khánh thành ngày 31/10/1966; gắn với sự kiện ngày 30/4/1975 và sự nghiệp thống nhất đất nước.",
-    source: "https://dinhdoclap.gov.vn/lich-su-dinh-doc-lap/",
+    source: "https://dsvh.gov.vn/di-tich-lich-su-dinh-doc-lap-2937",
   },
   {
     id: "government",

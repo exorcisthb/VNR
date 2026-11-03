@@ -18,7 +18,7 @@ export const TANK_LANDMARK = {
   approach: 24,
   outdoor: true,
   description: 'Khu trưng bày xe tăng ngoài trời trên bục đá, có lối đi quan sát quanh bốn phía. Vui lòng đứng ngoài hàng rào để bảo vệ hiện vật.',
-  source: 'https://dinhdoclap.gov.vn/lich-su-dinh-doc-lap/',
+  source: 'https://dsvh.gov.vn/xe-tang-t59-so-hieu-390-3035',
 };
 
 export function makeTankExhibit(l, makeBuilding) {

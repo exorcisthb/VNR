@@ -1,7 +1,7 @@
 // Public reference photographs document the room types and furniture language.
 // Positions in this compact visitor model are not the actual building's floor plan.
 const RECEPTION_SOURCE = 'https://baochinhphu.vn/thu-tuong-pham-minh-chinh-tiep-bo-truong-quoc-phong-nhat-ban-102240806182511406.htm';
-const OPERATIONS_SOURCE = 'https://media.chinhphu.vn/khai-truong-trung-tam-thong-tin-chi-dao-dieu-hanh-va-he-thong-thong-tin-bao-cao-quoc-gia-102277748.htm';
+const OPERATIONS_SOURCE = 'https://baochinhphu.vn/khai-truong-trung-tam-thong-tin-chi-dao-dieu-hanh-va-he-thong-thong-tin-bao-cao-quoc-gia-102277748.htm';
 const MEETING_SOURCE = 'https://baochinhphu.vn/ngay-nay-10-nam-truoc-hoi-nghi-truyen-hinh-truc-tuyen-dau-tien-cua-chinh-phu-voi-63-dia-phuong-102253993.htm';
 
 export function governmentPublicInteriors(b, { chair, sofa, table }) {
