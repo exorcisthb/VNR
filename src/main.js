@@ -171,6 +171,7 @@ function onMessage(m) {
     clearInput();
     avatars.clear();
     $("pause").hidden = true;
+    $("location-document").hidden = true;
     $("hud").hidden = true;
     $("welcome").hidden = false;
     document.body.classList.remove("playing");
@@ -530,6 +531,7 @@ $("btn-rooms-cancel")?.addEventListener("click", () => {
 });
 function menu(show) {
   if (!playing) return;
+  $("location-document").hidden = true;
   paused = show;
   wantsLook = !show;
   clearInput();
@@ -541,6 +543,27 @@ function menu(show) {
     updateSource();
   } else capture();
 }
+function locationDocument(show) {
+  if (!playing) return;
+  paused = show;
+  wantsLook = !show;
+  clearInput();
+  $("location-document").hidden = !show;
+  $("mouse-hint").hidden = true;
+  if (show) {
+    updateInfo();
+    const source = currentRoom || currentLandmark;
+    $("document-title").textContent = (source.name || "").normalize("NFC");
+    $("document-description").textContent = (source.description || "").normalize("NFC");
+    $("document-source").href = source.source;
+    document.exitPointerLock?.();
+    $("document-close").focus();
+  } else {
+    canvas.focus();
+    capture();
+  }
+}
+$("document-close").addEventListener("click", () => locationDocument(false));
 $("menu-button").addEventListener("click", () => menu(!paused));
 $("resume").addEventListener("click", () => menu(false));
 $("leave").addEventListener("click", () => {
@@ -555,6 +578,7 @@ $("leave").addEventListener("click", () => {
   clearInput();
   avatars.clear();
   $("pause").hidden = true;
+  $("location-document").hidden = true;
   $("hud").hidden = true;
   $("welcome").hidden = false;
   document.body.classList.remove("playing");
@@ -642,6 +666,15 @@ window.addEventListener("blur", () => {
   if (playing && !paused && $("chat-form").hidden) menu(true);
 });
 document.addEventListener("keydown", (e) => {
+  if (!$("location-document").hidden && e.code === "Tab") {
+    const first = $("document-close"), last = $("document-source");
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault(); first.focus();
+    }
+    return;
+  }
   const typing = e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement || e.target instanceof HTMLTextAreaElement || e.target.isContentEditable;
   if (opensChat(e, { playing, paused, typing })) {
     // Cancel Enter's default button activation; otherwise a focused Menu
@@ -657,6 +690,10 @@ document.addEventListener("keydown", (e) => {
   }
   if (e.code === "Escape") {
     e.preventDefault();
+    if (!$("location-document").hidden) {
+      locationDocument(false);
+      return;
+    }
     if (starting && !playing) {
       network.disconnect();
       wantsLook = false;
@@ -675,7 +712,8 @@ document.addEventListener("keydown", (e) => {
   if (!playing || paused) return;
   if (["Space", "ArrowUp", "ArrowDown"].includes(e.code)) e.preventDefault();
   if (e.code === "KeyE") {
-    menu(true);
+    e.preventDefault();
+    if (!e.repeat) locationDocument(true);
     return;
   }
   if (e.code === "KeyR") {
