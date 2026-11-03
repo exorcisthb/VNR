@@ -4,6 +4,9 @@ import { BUILDINGS } from "../shared/architecture.mjs";
 import { makeMaterials, flagCanvas } from "./materials.js";
 import { heritageMaterials, heritageGeometries } from "./heritage.js";
 import partyFlagUrl from "./assets/party-flag.jpg";
+import museumExhibitionUrl from "./assets/museum-exhibition.jpg";
+import museumJourneyUrl from "./assets/museum-journey.jpg";
+import { retryAsset } from "./asset-loading.js";
 
 let partyFlagTexture;
 const museumPhotoTextures = new Map();
@@ -151,10 +154,28 @@ function nationalEmblemCanvas() {
 function labelTexture(label) {
   if (label.kind === "museum-photo") {
     if (!museumPhotoTextures.has(label.image)) {
-      const texture = new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}museum/${label.image}`);
+      const placeholder = document.createElement('canvas');
+      placeholder.width = 640; placeholder.height = 420;
+      const context = placeholder.getContext('2d');
+      const status = text => {
+        context.fillStyle = '#e7dbc1'; context.fillRect(0, 0, 640, 420);
+        context.fillStyle = '#813b31'; context.font = '26px Arial';
+        context.textAlign = 'center'; context.fillText(text, 320, 210);
+      };
+      status('Đang tải ảnh tư liệu…');
+      const texture = new THREE.CanvasTexture(placeholder);
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.anisotropy = 4;
       museumPhotoTextures.set(label.image, texture);
+      const url = { 'exhibition.jpg': museumExhibitionUrl, 'journey.jpg': museumJourneyUrl }[label.image];
+      retryAsset(() => new THREE.ImageLoader().loadAsync(url)).then(image => {
+        texture.image = image;
+        texture.needsUpdate = true;
+      }).catch(error => {
+        status('Ảnh chưa tải được · vui lòng tải lại trang');
+        texture.needsUpdate = true;
+        console.warn('Không tải được ảnh bảo tàng:', url, error);
+      });
     }
     return museumPhotoTextures.get(label.image);
   }
@@ -1063,10 +1084,16 @@ export class ArchitectureRenderer {
     const candidates = [];
     for (const display of this.modelDisplays) {
       const [x, , z] = display.placement.position;
-      if (display.requested || Math.hypot(p.x - x, p.z - z) > display.loadDistance) continue;
+      if (display.requested || now < (display.retryAfter || 0) ||
+          Math.hypot(p.x - x, p.z - z) > display.loadDistance) continue;
       display.requested = true;
       addModelInstances(display.parent, MODEL_URLS[display.model], [display.placement])
-        .catch(error => console.warn(`Không tải được model ${display.model}:`, error));
+        .catch(error => {
+          display.requested = false;
+          display.failures = (display.failures || 0) + 1;
+          display.retryAfter = performance.now() + Math.min(60000, 5000 * display.failures);
+          console.warn(`Không tải được model ${display.model}, sẽ thử lại:`, error);
+        });
     }
     for (const door of this.doors) {
       const dist = Math.hypot(p.x - door.position[0], p.z - door.position[2]);

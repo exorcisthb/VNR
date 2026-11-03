@@ -1,7 +1,24 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { retryAsset, scheduleModelLoad } from './asset-loading.js';
 
 const cache = new Map();
+async function loadModelFile(url) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120000);
+  let bytes;
+  try {
+    const response = await fetch(url, { signal: controller.signal, credentials: 'same-origin' });
+    if (!response.ok) throw new Error(`Model HTTP ${response.status}: ${url}`);
+    bytes = await response.arrayBuffer();
+  } finally {
+    clearTimeout(timeout);
+  }
+  if (bytes.byteLength < 12 || new DataView(bytes).getUint32(0, true) !== 0x46546c67)
+    throw new Error(`Model response is not a GLB: ${url}`);
+  const path = new URL('.', new URL(url, location.href)).href;
+  return new GLTFLoader().parseAsync(bytes, path);
+}
 export const MODEL_URLS = {
   tree: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('cây.glb')}?v=3`,
   carpet: `${import.meta.env?.BASE_URL ?? '/'}models/thamr.glb`,
@@ -41,13 +58,17 @@ export async function addModelInstances(parent, url, placements, modelRotation =
   if (!placements.length) return;
   const cacheKey = `${url}|${modelRotation.join(",")}`;
   if (!cache.has(cacheKey)) {
-    cache.set(cacheKey, new GLTFLoader().loadAsync(url).then(gltf => {
+    const request = retryAsset(() => scheduleModelLoad(() => loadModelFile(url))).then(gltf => {
       if (modelRotation.every(angle => angle === 0)) return normalizeModel(gltf.scene);
       const orientedRoot = new THREE.Group();
       orientedRoot.rotation.set(...modelRotation);
       orientedRoot.add(gltf.scene);
       return normalizeModel(orientedRoot);
-    }));
+    }).catch(error => {
+      cache.delete(cacheKey);
+      throw error;
+    });
+    cache.set(cacheKey, request);
   }
   const model = await cache.get(cacheKey);
   const group = new THREE.Group();
