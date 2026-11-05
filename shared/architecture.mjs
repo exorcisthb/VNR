@@ -4,6 +4,7 @@ import { makePagoda, makeDrum } from "./exhibits.mjs";
 import { makeTankExhibit } from "./tank-exhibit.mjs";
 import { governmentPublicInteriors } from "./government-interiors.mjs";
 import { addMuseumGallery } from "./museum.mjs";
+import { VIDEO_SCREENS } from "./video-screens.mjs";
 
 // Các cấu kiện dùng chung cho hiển thị và va chạm, đơn vị mét trong bản mô phỏng.
 // Bố trí phòng được rút gọn để tham quan, không phải bản vẽ hoàn công.
@@ -1077,6 +1078,14 @@ export const SOLIDS = [
     b.parts.filter((p) => p.solid).map((p) => ({ ...p, buildingId: b.id })),
   ),
   ...LOTUS_PIER_BARRIERS,
+  ...VIDEO_SCREENS.map(screen => {
+    // Block the span below the display as well as the frame so visitors go around it.
+    const height = screen.titleY + screen.titleHeight / 2;
+    return makeCollisionBarrier(
+      screen.x, screen.y + height / 2, screen.z,
+      screen.frameWidth, height, screen.faceDepth * 2, "video-screen",
+    );
+  }),
 ];
 const spatial = new Map();
 for (const p of SOLIDS) {

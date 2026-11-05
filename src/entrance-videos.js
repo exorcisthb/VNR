@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { LANDMARKS } from "../shared/landmarks.mjs";
+import { VIDEO_SCREENS } from "../shared/video-screens.mjs";
 import { documentPhoto } from "./document-photos.js";
 import mausoleum from "../video/lăng bác.mp4?url";
 import palace from "../video/Dinh độc lập.mp4?url";
@@ -7,14 +7,7 @@ import pagoda from "../video/Chùa 1 cột.mp4?url";
 import tank from "../video/390.mp4?url";
 import lotusPond from "../video/đầm sen.mp4?url";
 
-const entrances = [
-  { id: "mausoleum", url: mausoleum, aspect: 16 / 9 },
-  { id: "palace", url: palace, aspect: 16 / 9 },
-  { id: "pagoda", url: pagoda, aspect: 576 / 768 },
-  { id: "tank", url: tank, aspect: 664 / 360 },
-  // The pond is a scenery area, with its name board at the start of the pier.
-  { id: "lotus-pond", url: lotusPond, aspect: 576 / 1024, site: { x: 66, front: -1, sign: { z: 39 } } },
-];
+const videoUrls = { mausoleum, palace, pagoda, tank, "lotus-pond": lotusPond };
 
 function hideMausoleumVideoText(material) {
   material.onBeforeCompile = shader => {
@@ -44,18 +37,12 @@ export function addEntranceVideos(scene, button, boardTexture) {
   const trim = new THREE.MeshStandardMaterial({ color: "#ba9559", roughness: 0.65 });
   const titleMaterial = new THREE.MeshBasicMaterial({ map: boardTexture("VIDEO TƯ LIỆU") });
   const images = new THREE.TextureLoader();
-  const screens = entrances.map(entry => {
-    const landmark = LANDMARKS.find(l => l.id === entry.id);
-    const site = landmark ?? entry.site;
-    // Left as seen from the approach, on the same line as the name board.
-    const x = site.x - site.front * 6.4;
-    const z = site.sign.z;
+  const screens = VIDEO_SCREENS.map(entry => {
+    const { x, y, z, front, width, height, centerY, frameWidth, faceDepth,
+      titleY, titleHeight, landmark } = entry;
     const group = new THREE.Group();
-    group.position.set(x, 3, z);
-    group.rotation.y = site.front === 1 ? 0 : Math.PI;
-    const height = entry.aspect < 1 ? 4 : 3;
-    const width = height * entry.aspect;
-    const center = 1.05 + height / 2;
+    group.position.set(x, y, z);
+    group.rotation.y = front === 1 ? 0 : Math.PI;
     function box(w, h, d, x, y, material) {
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
       mesh.position.set(x, y, 0);
@@ -63,8 +50,8 @@ export function addEntranceVideos(scene, button, boardTexture) {
     }
     box(width + 0.55, 0.12, 1.05, 0, 0.06, frame);
     for (const side of [-1, 1]) box(0.16, 1.08, 0.24, side * width * 0.38, 0.55, frame);
-    box(width + 0.2, height + 0.2, 0.25, 0, center, trim);
-    box(width + 0.2, 0.74, 0.25, 0, center + height / 2 + 0.42, frame);
+    box(frameWidth, height + 0.2, 0.25, 0, centerY, trim);
+    box(frameWidth, titleHeight, 0.25, 0, titleY, frame);
     const surface = new THREE.MeshBasicMaterial({ color: "#234638", toneMapped: false });
     if (entry.id === "mausoleum") hideMausoleumVideoText(surface);
     const titleGeometry = new THREE.PlaneGeometry(width + 0.16, 0.72);
@@ -72,13 +59,13 @@ export function addEntranceVideos(scene, button, boardTexture) {
     for (const side of [-1, 1]) {
       const title = new THREE.Mesh(titleGeometry, titleMaterial);
       const face = new THREE.Mesh(screenGeometry, surface);
-      title.position.set(0, center + height / 2 + 0.42, side * 0.14);
-      face.position.set(0, center, side * 0.14);
+      title.position.set(0, titleY, side * faceDepth);
+      face.position.set(0, centerY, side * faceDepth);
       title.rotation.y = face.rotation.y = side === 1 ? 0 : Math.PI;
       group.add(title, face);
     }
     scene.add(group);
-    const screen = { ...entry, x, z, group, surface, video: null, poster: null };
+    const screen = { x, z, url: videoUrls[entry.id], group, surface, video: null, poster: null };
     const photo = landmark && documentPhoto(landmark);
     if (photo?.src) {
       images.load(photo.src, texture => {
