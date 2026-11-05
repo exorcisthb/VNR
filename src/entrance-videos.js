@@ -5,12 +5,15 @@ import mausoleum from "../video/lăng bác.mp4?url";
 import palace from "../video/Dinh độc lập.mp4?url";
 import pagoda from "../video/Chùa 1 cột.mp4?url";
 import tank from "../video/390.mp4?url";
+import lotusPond from "../video/đầm sen.mp4?url";
 
 const entrances = [
   { id: "mausoleum", url: mausoleum, aspect: 16 / 9 },
   { id: "palace", url: palace, aspect: 16 / 9 },
   { id: "pagoda", url: pagoda, aspect: 576 / 768 },
   { id: "tank", url: tank, aspect: 664 / 360 },
+  // The pond is a scenery area, with its name board at the start of the pier.
+  { id: "lotus-pond", url: lotusPond, aspect: 576 / 1024, site: { x: 66, front: -1, sign: { z: 39 } } },
 ];
 
 function hideMausoleumVideoText(material) {
@@ -43,12 +46,13 @@ export function addEntranceVideos(scene, button, boardTexture) {
   const images = new THREE.TextureLoader();
   const screens = entrances.map(entry => {
     const landmark = LANDMARKS.find(l => l.id === entry.id);
+    const site = landmark ?? entry.site;
     // Left as seen from the approach, on the same line as the name board.
-    const x = landmark.x - landmark.front * 6.4;
-    const z = landmark.sign.z;
+    const x = site.x - site.front * 6.4;
+    const z = site.sign.z;
     const group = new THREE.Group();
     group.position.set(x, 3, z);
-    group.rotation.y = landmark.front === 1 ? 0 : Math.PI;
+    group.rotation.y = site.front === 1 ? 0 : Math.PI;
     const height = entry.aspect < 1 ? 4 : 3;
     const width = height * entry.aspect;
     const center = 1.05 + height / 2;
@@ -75,7 +79,7 @@ export function addEntranceVideos(scene, button, boardTexture) {
     }
     scene.add(group);
     const screen = { ...entry, x, z, group, surface, video: null, poster: null };
-    const photo = documentPhoto(landmark);
+    const photo = landmark && documentPhoto(landmark);
     if (photo?.src) {
       images.load(photo.src, texture => {
         texture.colorSpace = THREE.SRGBColorSpace;
