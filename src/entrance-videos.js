@@ -13,6 +13,29 @@ const entrances = [
   { id: "tank", url: tank, aspect: 664 / 360 },
 ];
 
+function hideMausoleumVideoText(material) {
+  material.onBeforeCompile = shader => {
+    // The text is baked into a fixed rectangle. Blend in nearby pixels only
+    // on the video texture, before Three.js converts its colors.
+    const mapFragment = THREE.ShaderChunk.map_fragment.replace(
+      "#ifdef DECODE_VIDEO_TEXTURE",
+      `#ifdef DECODE_VIDEO_TEXTURE
+        vec2 uv = vMapUv;
+        if (uv.x > 0.815 && uv.x < 0.994 && uv.y > 0.134 && uv.y < 0.221) {
+          float weight = smoothstep(0.815, 0.825, uv.x) *
+            (1.0 - smoothstep(0.984, 0.994, uv.x)) *
+            smoothstep(0.134, 0.151, uv.y) *
+            (1.0 - smoothstep(0.205, 0.221, uv.y));
+          vec4 below = texture2D(map, vec2(uv.x, 0.134));
+          vec4 above = texture2D(map, vec2(uv.x, 0.221));
+          vec4 fill = mix(below, above, (uv.y - 0.134) / 0.087);
+          sampledDiffuseColor = mix(sampledDiffuseColor, fill, weight);
+        }`,
+    );
+    shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", mapFragment);
+  };
+}
+
 export function addEntranceVideos(scene, button, boardTexture) {
   const frame = new THREE.MeshStandardMaterial({ color: "#312825", roughness: 0.85 });
   const trim = new THREE.MeshStandardMaterial({ color: "#ba9559", roughness: 0.65 });
@@ -39,6 +62,7 @@ export function addEntranceVideos(scene, button, boardTexture) {
     box(width + 0.2, height + 0.2, 0.25, 0, center, trim);
     box(width + 0.2, 0.74, 0.25, 0, center + height / 2 + 0.42, frame);
     const surface = new THREE.MeshBasicMaterial({ color: "#234638", toneMapped: false });
+    if (entry.id === "mausoleum") hideMausoleumVideoText(surface);
     const titleGeometry = new THREE.PlaneGeometry(width + 0.16, 0.72);
     const screenGeometry = new THREE.PlaneGeometry(width, height);
     for (const side of [-1, 1]) {
