@@ -19,10 +19,16 @@ function boardTexture(title, subtitle) {
   g.textAlign = "center";
   g.fillStyle = "#f1e4c9";
   g.font = "bold 48px 'Be Vietnam Pro', 'Segoe UI', Arial, sans-serif";
-  g.fillText(title, 512, 109, 950);
-  g.fillStyle = "#ced3bd";
-  g.font = "26px 'Be Vietnam Pro', 'Segoe UI', Arial, sans-serif";
-  g.fillText(subtitle, 512, 180, 950);
+  if (subtitle) {
+    g.fillText(title, 512, 109, 950);
+    g.fillStyle = "#ced3bd";
+    g.font = "26px 'Be Vietnam Pro', 'Segoe UI', Arial, sans-serif";
+    g.fillText(subtitle, 512, 180, 950);
+  } else {
+    g.font = "bold 88px 'Be Vietnam Pro', 'Segoe UI', Arial, sans-serif";
+    g.textBaseline = "middle";
+    g.fillText(title, 512, 128, 950);
+  }
   const map = new THREE.CanvasTexture(c);
   map.colorSpace = THREE.SRGBColorSpace;
   return map;
