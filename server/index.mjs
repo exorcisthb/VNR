@@ -1,8 +1,50 @@
 import http from "node:http";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { readFile } from "node:fs/promises";
+import { createReadStream } from "node:fs";
+import { readFile, stat } from "node:fs/promises";
 import { attachGameCore, root } from "./game.mjs";
+
+async function serveVideo(req, res, file) {
+  const info = await stat(file);
+  if (!info.isFile()) throw new Error("Video is not a file");
+  const size = info.size;
+  const headers = {
+    "Content-Type": "video/mp4",
+    "Accept-Ranges": "bytes",
+    "Cache-Control": "public, max-age=31536000, immutable",
+  };
+  let start = 0;
+  let end = size - 1;
+  const range = req.method === "GET" && req.headers.range;
+  if (range) {
+    const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+    if (match?.[1]) {
+      start = Number(match[1]);
+      if (match[2]) end = Math.min(end, Number(match[2]));
+    } else if (match?.[2]) {
+      start = Math.max(0, size - Number(match[2]));
+    } else {
+      start = size;
+    }
+    if (start > end) {
+      res.writeHead(416, { ...headers, "Content-Range": `bytes */${size}` });
+      res.end();
+      return;
+    }
+    headers["Content-Range"] = `bytes ${start}-${end}/${size}`;
+  }
+  headers["Content-Length"] = end - start + 1;
+  res.writeHead(range ? 206 : 200, headers);
+  if (req.method === "HEAD" || !size) {
+    res.end();
+    return;
+  }
+  const stream = createReadStream(file, { start, end });
+  stream.on("error", () => res.destroy());
+  res.on("close", () => stream.destroy());
+  stream.pipe(res);
+}
 
 export async function createGameServer({
   port = 0,
@@ -32,6 +74,10 @@ export async function createGameServer({
         );
         if (!file.startsWith(path.join(root, "dist") + path.sep))
           throw new Error("path");
+        if (path.extname(file).toLowerCase() === ".mp4") {
+          await serveVideo(req, res, file);
+          return;
+        }
         let data, encoding;
         if (file.endsWith('.glb') && /\bbr\b/.test(req.headers['accept-encoding'] || '')) {
           try { data = await readFile(file + '.br'); encoding = 'br'; } catch {}

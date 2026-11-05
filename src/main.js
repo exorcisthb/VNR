@@ -94,7 +94,7 @@ let lastMouse = null,
   audio;
 const avatars = new Avatars(scene),
   architecture = new ArchitectureRenderer(scene),
-  scenery = addScenery(scene),
+  scenery = addScenery(scene, $("video-sound")),
   pivot = new THREE.Vector3(),
   backward = new THREE.Vector3(),
   desired = new THREE.Vector3(),
@@ -743,6 +743,10 @@ document.addEventListener("keydown", (e) => {
     if (!e.repeat) locationDocument(true);
     return;
   }
+  if (e.code === "KeyV" && $("chat-form").hidden) {
+    if (!e.repeat) scenery.entranceVideos.toggleSound();
+    return;
+  }
   if (e.code === "KeyR") {
     if (network.ready) {
       network.send({ type: "respawn" });
@@ -1123,6 +1127,7 @@ function frame(now) {
     $("quality").value === "low" ? 2 : 3,
   );
   scenery.update(focus.x, focus.z, chunks.radius);
+  scenery.entranceVideos.update(focus, playing && !paused && !document.hidden);
   renderer.render(scene, camera);
   frames++;
   if (now - fpsTime > 1000) {

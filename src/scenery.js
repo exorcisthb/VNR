@@ -4,6 +4,7 @@ import { LANDMARKS } from "../shared/landmarks.mjs";
 import { TREES } from "../shared/environment.mjs";
 import { surfaceTexture } from "./materials.js";
 import { createFountainWater, fountainStructureGeometry } from "./fountain.js";
+import { addEntranceVideos } from "./entrance-videos.js";
 
 function boardTexture(title, subtitle) {
   const c = document.createElement("canvas");
@@ -26,7 +27,8 @@ function boardTexture(title, subtitle) {
   map.colorSpace = THREE.SRGBColorSpace;
   return map;
 }
-export function addScenery(scene) {
+export function addScenery(scene, videoButton) {
+  const entranceVideos = addEntranceVideos(scene, videoButton, boardTexture);
   const groups = [],
     objects = [],
     unit = new THREE.BoxGeometry(1, 1, 1),
@@ -442,6 +444,7 @@ export function addScenery(scene) {
   );
   scene.add(sky);
   return {
+    entranceVideos,
     update(x, z, radius) {
       sky.position.set(x, 20, z);
       const distance = radius * 16 + 28;
