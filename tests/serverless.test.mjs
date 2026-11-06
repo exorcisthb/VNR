@@ -92,10 +92,67 @@ test('room chat retains all messages, stays private, and disappears when the hos
     assert.equal(late.welcome.history.at(-1).text,'Tin 26');
     const other=await join('create',null,'Other host');assert.deepEqual(other.welcome.history,[]);
     const disbanded=waitFor(late.ws,m=>m.type==='disbanded');const closed=once(host.ws,'close');
-    host.ws.close();await disbanded;await closed;
+    host.ws.send(JSON.stringify({type:'leave'}));await disbanded;await closed;
     const rooms=await (await fetch(origin+'/api/rooms')).json();assert.ok(!rooms.some(room=>room.id===id));
     const next=await join('create',null,'New host');
     assert.equal(next.welcome.roomId,id);
     assert.deepEqual(next.welcome.history,[]);
   } finally { for(const ws of clients)ws.terminate();await app.close(); }
+});
+
+test('refresh resumes the same room and position, and an unreturned host expires', { timeout: 15000 }, async () => {
+  const app = await createFunctionServer({ reconnectGraceMs: 1200 });
+  const clients = [];
+  try {
+    await new Promise(resolve => app.server.listen(0, '127.0.0.1', resolve));
+    const origin = `http://127.0.0.1:${app.server.address().port}`;
+    const listRooms = async () => (await fetch(origin + '/api/rooms')).json();
+    async function connect(request, type = 'welcome') {
+      const ws = new WebSocket(origin.replace('http:', 'ws:') + '/ws');
+      clients.push(ws);
+      await once(ws, 'open');
+      const response = waitFor(ws, m => m.type === type);
+      ws.send(JSON.stringify(request));
+      return { ws, message: await response };
+    }
+    const host = await connect({ type: 'join', action: 'create', name: 'Host' });
+    const { id, roomId, sessionToken } = host.message;
+    const student = await connect({ type: 'join', name: 'Student', roomId });
+    assert.ok(sessionToken);
+    assert.ok(student.message.players.every(player => !player.sessionToken));
+    const position = waitFor(host.ws, m => m.type === 'correction');
+    host.ws.send(JSON.stringify({ type: 'visit', id: 'palace', roomId: 'helipad' }));
+    const { type, ...spawn } = await position;
+    const chat = waitFor(host.ws, m => m.type === 'chat');
+    student.ws.send(JSON.stringify({ type: 'chat', text: 'Đang tham quan' }));
+    await chat;
+
+    const closed = once(host.ws, 'close');
+    host.ws.close();
+    await closed;
+    assert.equal((await listRooms()).find(room => room.id === roomId)?.players, 2);
+    const resumed = await connect({ type: 'resume', sessionToken });
+    assert.equal(resumed.message.roomId, roomId);
+    assert.equal(resumed.message.id, id);
+    assert.equal(resumed.message.role, 'host');
+    assert.deepEqual(resumed.message.spawn, spawn);
+    assert.equal(resumed.message.history[0].text, 'Đang tham quan');
+
+    const previousClosed = once(resumed.ws, 'close');
+    const replacement = await connect({ type: 'resume', sessionToken });
+    await previousClosed;
+    assert.equal(replacement.message.players.length, 2);
+
+    const disbanded = waitFor(student.ws, m => m.type === 'disbanded');
+    replacement.ws.close();
+    await disbanded;
+    assert.deepEqual(await listRooms(), []);
+    const expired = await connect({ type: 'resume', sessionToken }, 'error');
+    assert.equal(expired.message.code, 'sessionExpired');
+    const expiredStudent = await connect({ type: 'resume', sessionToken: student.message.sessionToken }, 'error');
+    assert.equal(expiredStudent.message.code, 'sessionExpired');
+  } finally {
+    for (const ws of clients) ws.terminate();
+    await app.close();
+  }
 });

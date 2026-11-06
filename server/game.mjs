@@ -45,6 +45,7 @@ export async function attachGameCore({
   worldFile = process.env.WORLD_FILE || path.join(root, "data", "world.json"),
   dev = false,
   persistent = true,
+  reconnectGraceMs = 90_000,
 } = {}) {
   const saved = persistent ? await loadSave(worldFile) : { edits: [] };
   const world = new VoxelWorld(
@@ -57,6 +58,7 @@ export async function attachGameCore({
   await storage.flush();
 
   const players = new Map();
+  const sessions = new Map();
   const rooms = new Map();
   const history = [];
   let revision = 0;
@@ -202,8 +204,8 @@ export async function attachGameCore({
   const broadcastToRoom = (roomId, data, exceptWs) => {
     const room = rooms.get(roomId);
     if (!room) return;
-    for (const [ws] of room.players) {
-      if (ws !== exceptWs) send(ws, data);
+    for (const p of room.players.values()) {
+      if (p.socket && p.socket !== exceptWs) send(p.socket, data);
     }
   };
 
@@ -223,6 +225,62 @@ export async function attachGameCore({
   });
 
   const reject = (ws, message) => send(ws, { type: "error", message });
+
+  function attachPlayer(ws, p, room) {
+    clearTimeout(p.expiry);
+    if (p.socket) {
+      players.delete(p.socket);
+      send(p.socket, { type: "disbanded", message: "Phiên này đã được tiếp tục ở một kết nối khác." });
+      p.socket.close(1000, "Session resumed");
+    }
+    p.socket = ws;
+    p.lastMove = Date.now();
+    players.set(ws, p);
+    send(ws, {
+      type: "welcome",
+      id: p.id,
+      roomId: room.id,
+      role: p.role,
+      sessionToken: p.sessionToken,
+      spawn: { x: p.x, y: p.y, z: p.z, yaw: p.yaw },
+      version: WORLD_VERSION,
+      revision,
+      edits: Array.from(world.edits),
+      players: Array.from(room.players.values(), publicPlayer),
+      history: room.history,
+      mode: "tour",
+    });
+  }
+
+  function removePlayer(p) {
+    clearTimeout(p.expiry);
+    sessions.delete(p.sessionToken);
+    if (p.socket) players.delete(p.socket);
+    p.socket = null;
+  }
+
+  function leaveRoom(p) {
+    const room = rooms.get(p.roomId);
+    if (!room) return;
+    removePlayer(p);
+    room.players.delete(p);
+    if (p.role === "host") {
+      rooms.delete(room.id);
+      for (const member of room.players.values()) {
+        const socket = member.socket;
+        removePlayer(member);
+        if (socket) {
+          send(socket, {
+            type: "disbanded",
+            message: `Trưởng đoàn (Host: ${p.name}) đã rời phòng. Đoàn tham quan #${room.id} đã giải tán.`,
+          });
+          socket.close(1000, "Host left");
+        }
+      }
+    } else {
+      broadcastToRoom(room.id, { type: "left", id: p.id, name: p.name });
+    }
+  }
 
   wss.on("connection", (ws) => {
     ws.alive = true;
@@ -248,6 +306,7 @@ export async function attachGameCore({
       return true;
     }
     ws.on("message", (raw, isBinary) => {
+      if (ws.readyState !== WebSocket.OPEN) return;
       if (isBinary || !allowed("all", 100, 150))
         return ws.close(1008, "Too many messages");
       let m;
@@ -258,6 +317,20 @@ export async function attachGameCore({
       }
       if (!m || typeof m !== "object") return;
       let p = players.get(ws);
+      if (m.type === "resume") {
+        if (p) return;
+        const session = sessions.get(m.sessionToken);
+        if (!session) {
+          return send(ws, {
+            type: "error",
+            code: "sessionExpired",
+            message: "Phiên tham quan đã hết hạn hoặc phòng đã giải tán.",
+          });
+        }
+        clearTimeout(timeout);
+        attachPlayer(ws, session, rooms.get(session.roomId));
+        return;
+      }
       if (m.type === "join") {
         if (p) return;
         const name = clean(m.name, 20);
@@ -273,11 +346,9 @@ export async function attachGameCore({
           assignedRoom = {
             id: roomId,
             name: `Đoàn tham quan #${roomId} của ${name}`,
-            hostWs: ws,
-            hostId: null,
             hostName: name,
             createdAt: Date.now(),
-            players: new Map(),
+            players: new Set(),
             history: [],
             maxPlayers: 50,
           };
@@ -299,32 +370,15 @@ export async function attachGameCore({
           id: randomUUID().slice(0, 8),
           name,
           role,
+          roomId: assignedRoom.id,
+          sessionToken: randomUUID(),
           color: ["#d7ac68", "#689b9a", "#ae7f83", "#829d63"][assignedRoom.players.size % 4],
           ...SPAWN,
-          lastMove: Date.now(),
         };
 
-        if (role === "host") {
-          assignedRoom.hostId = p.id;
-        }
-
-        players.set(ws, p);
-        assignedRoom.players.set(ws, p);
-        ws.roomId = assignedRoom.id;
-
-        send(ws, {
-          type: "welcome",
-          id: p.id,
-          roomId: assignedRoom.id,
-          role: p.role,
-          spawn: SPAWN,
-          version: WORLD_VERSION,
-          revision,
-          edits: Array.from(world.edits),
-          players: Array.from(assignedRoom.players.values(), publicPlayer),
-          history: assignedRoom.history,
-          mode: "tour",
-        });
+        sessions.set(p.sessionToken, p);
+        assignedRoom.players.add(p);
+        attachPlayer(ws, p, assignedRoom);
         broadcastToRoom(assignedRoom.id, { type: "joined", player: publicPlayer(p) }, ws);
         broadcastToRoom(assignedRoom.id, {
           type: "players",
@@ -333,6 +387,11 @@ export async function attachGameCore({
         return;
       }
       if (!p) return;
+      if (m.type === "leave") {
+        leaveRoom(p);
+        ws.close(1000, "Left tour");
+        return;
+      }
       if (m.type === "move" && allowed("move", 30, 40)) {
         if (![m.x, m.y, m.z, m.yaw].every(Number.isFinite)) return;
         const now = Date.now(),
@@ -382,11 +441,9 @@ export async function attachGameCore({
         const text = clean(m.text, 160);
         if (!text) return;
         const message = { type: "chat", name: p.name, text, time: Date.now() };
-        if (ws.roomId && rooms.has(ws.roomId)) {
-          const room = rooms.get(ws.roomId);
-          room.history.push(message);
-          broadcastToRoom(room.id, message);
-        }
+        const room = rooms.get(p.roomId);
+        room.history.push(message);
+        broadcastToRoom(room.id, message);
       }
       if (m.type === "edit")
         reject(ws, "Đây là chế độ tham quan, không chỉnh sửa khối.");
@@ -394,37 +451,13 @@ export async function attachGameCore({
     ws.on("close", () => {
       clearTimeout(timeout);
       const p = players.get(ws);
-      if (p) {
-        players.delete(ws);
-        if (ws.roomId && rooms.has(ws.roomId)) {
-          const room = rooms.get(ws.roomId);
-          room.players.delete(ws);
-
-          if (ws === room.hostWs || p.role === "host") {
-            // Host rời phòng -> giải tán toàn bộ phòng và thu hồi ID
-            console.log(`[Phòng #${room.id}] Host ${p.name} đã rời phòng. Đang giải tán phòng #${room.id}...`);
-            for (const [memberWs] of room.players) {
-              send(memberWs, {
-                type: "disbanded",
-                message: `Trưởng đoàn (Host: ${p.name}) đã rời phòng. Đoàn tham quan #${room.id} đã giải tán.`,
-              });
-              players.delete(memberWs);
-              memberWs.roomId = null;
-              memberWs.close(1000, "Host left");
-            }
-            room.players.clear();
-            room.history.length = 0;
-            rooms.delete(room.id); // Thu hồi ID phòng để tái sử dụng
-          } else {
-            // Sinh viên rời phòng
-            broadcastToRoom(room.id, { type: "left", id: p.id, name: p.name });
-            broadcastToRoom(room.id, {
-              type: "players",
-              players: Array.from(room.players.values(), publicPlayer),
-            });
-          }
-        }
-      }
+      if (!p) return;
+      players.delete(ws);
+      p.socket = null;
+      if (closing) return;
+      // A reload and a closed tab both close the socket. Give the tab time to resume.
+      p.expiry = setTimeout(() => leaveRoom(p), reconnectGraceMs);
+      p.expiry.unref();
     });
   });
 
@@ -464,6 +497,7 @@ export async function attachGameCore({
     clearInterval(tick);
     clearInterval(saves);
     clearInterval(heartbeat);
+    for (const p of sessions.values()) clearTimeout(p.expiry);
     if (server) {
       server.off("upgrade", upgradeHandler);
     }

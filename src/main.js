@@ -91,6 +91,7 @@ let lastMouse = null,
   lookPointer = null,
   joyPointer = null,
   toastTimer,
+  restoreTimer,
   audio;
 const avatars = new Avatars(scene),
   architecture = new ArchitectureRenderer(scene),
@@ -114,9 +115,17 @@ const network = new Network(onMessage, (ready) => {
     toast("Đang kết nối lại với đoàn…");
   }
 });
+const tourSessionKey = "dau-viet-tour-session";
+function saveTourSession(token) {
+  try {
+    if (token) sessionStorage.setItem(tourSessionKey, token);
+    else sessionStorage.removeItem(tourSessionKey);
+  } catch {}
+}
 function onMessage(m) {
   if (m.type === "welcome") {
     const isReconnecting = playing && currentRoomId === m.roomId;
+    saveTourSession(m.sessionToken);
     selfId = m.id;
     currentRoomId = m.roomId;
     world = new VoxelWorld(m.edits);
@@ -128,13 +137,13 @@ function onMessage(m) {
       chunks.meshes.clear();
       chunks.queue.clear();
       chunks.cx = undefined;
-      chunks.world = world;
-      p = { ...m.spawn, vy: 0, pitch: -0.16, grounded: false };
-      cameraSnap = true;
     } else {
-      chunks.world = world;
       toast("Đã kết nối lại thành công!");
     }
+    chunks.world = world;
+    p = { ...m.spawn, vy: 0, pitch: isReconnecting ? p.pitch : -0.16, grounded: false };
+    accumulator = 0;
+    cameraSnap = true;
     peerList = m.players;
     avatars.sync(peerList, selfId);
     chatLog.reset();
@@ -161,6 +170,7 @@ function onMessage(m) {
   } else if (m.type === "chat") addMessage(m.name, m.text);
   else if (m.type === "error") toast(m.message);
   else if (m.type === "disbanded") {
+    saveTourSession(null);
     network.disconnect();
     currentRoomId = null;
     peerList = [];
@@ -224,7 +234,7 @@ function refreshLobby() {
     .then((data) => {
       healthFailures = 0;
       lobbyData = data;
-      if (playing) return;
+      if (playing || starting) return;
       $("connection").textContent = "Không gian đang mở";
       $("online").textContent = `${data.players}/50 người`;
       if ($("room-capacity-badge")) {
@@ -244,7 +254,7 @@ function refreshLobby() {
     })
     .catch(() => {
       healthFailures++;
-      if (playing) return;
+      if (playing || starting) return;
       $("connection").textContent = "Chưa kết nối được máy chủ";
       $("online").textContent = "Mất kết nối";
       if ($("room-capacity-badge")) {
@@ -321,17 +331,19 @@ function enterSoloMode(name, action = "create") {
   );
 }
 
-async function enterGame(name, action = "create", roomId = null) {
+async function enterGame(name, action = "create", roomId = null, sessionToken = null) {
   if (starting) return;
+  clearTimeout(restoreTimer);
   starting = true;
-  wantsLook = true;
+  wantsLook = !sessionToken;
   capture();
   if ($("btn-create")) $("btn-create").disabled = true;
   if ($("btn-join")) $("btn-join").disabled = true;
   $("join-error").textContent =
+    sessionToken ? "Đang khôi phục phiên tham quan…" :
     action === "create" ? "Đang chuẩn bị không gian dẫn đoàn…" : "Đang vào phòng tham quan…";
   try {
-    await network.connect(name, action, roomId);
+    await network.connect(name, action, roomId, sessionToken);
     isSolo = false;
     playing = true;
     paused = false;
@@ -349,15 +361,23 @@ async function enterGame(name, action = "create", roomId = null) {
     if (!coarse && document.pointerLockElement !== canvas)
       $("mouse-hint").hidden = false;
     toast(
-      action === "create"
+      sessionToken ? "Đã tiếp tục phiên tham quan." : action === "create"
         ? "Bạn là HOST cầm cờ dẫn đoàn · Góc nhìn thứ ba."
         : "Bạn là SINH VIÊN FPT · Góc nhìn thứ ba.",
     );
   } catch (error) {
     wantsLook = false;
     document.exitPointerLock?.();
-    $("join-error").textContent = error.message;
-    toast(error.message);
+    if (error.cancelled) {
+      $("join-error").textContent = "";
+    } else if (sessionToken && error.serverUnreachable) {
+      $("join-error").textContent = "Đang thử kết nối lại để tiếp tục phiên tham quan…";
+      restoreTimer = setTimeout(() => enterGame(name, "resume", null, sessionToken), 2500);
+    } else {
+      if (error.code === "sessionExpired") saveTourSession(null);
+      $("join-error").textContent = error.message;
+      toast(error.message);
+    }
   } finally {
     starting = false;
     if ($("btn-create")) $("btn-create").disabled = false;
@@ -598,7 +618,8 @@ $("leave").addEventListener("click", () => {
   wantsLook = false;
   isSolo = false;
   currentRoomId = null;
-  network.disconnect();
+  saveTourSession(null);
+  network.disconnect({ leave: true });
   document.exitPointerLock?.();
   playing = false;
   paused = false;
@@ -722,6 +743,7 @@ document.addEventListener("keydown", (e) => {
       return;
     }
     if (starting && !playing) {
+      saveTourSession(null);
       network.disconnect();
       wantsLook = false;
       document.exitPointerLock?.();
@@ -1143,4 +1165,7 @@ window.addEventListener("resize", () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
 });
-window.addEventListener("beforeunload", () => network.disconnect());
+try {
+  const sessionToken = sessionStorage.getItem(tourSessionKey);
+  if (sessionToken) enterGame($("player-name").value, "resume", null, sessionToken);
+} catch {}

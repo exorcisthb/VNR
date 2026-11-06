@@ -7,14 +7,11 @@ export class Network {
     this.ready = false;
     this.socket = null;
     this.retry = null;
-    this.name = "";
+    this.sessionToken = null;
     this.stopped = true;
     this.generation = 0;
   }
-  connect(name, action = "join", roomId = null) {
-    this.name = name;
-    this.action = action;
-    this.roomId = roomId;
+  connect(name, action = "join", roomId = null, sessionToken = null) {
     this.stopped = false;
     clearTimeout(this.retry);
     const generation = ++this.generation;
@@ -38,7 +35,9 @@ export class Network {
           ws.close();
           return;
         }
-        ws.send(JSON.stringify(roomId ? { type: "join", name, action, roomId } : { type: "join", name, action }));
+        ws.send(JSON.stringify(sessionToken
+          ? { type: "resume", sessionToken }
+          : { type: "join", name, action, roomId }));
       });
       ws.addEventListener("message", (event) => {
         if (generation !== this.generation) return;
@@ -51,6 +50,7 @@ export class Network {
         if (m.type === "welcome") {
           clearTimeout(timer);
           welcomed = settled = true;
+          this.sessionToken = m.sessionToken;
           this.ready = true;
           this.onMessage(m);
           this.onStatus(true);
@@ -60,6 +60,7 @@ export class Network {
           settled = true;
           const err = new Error(m.message);
           err.serverReported = true;
+          err.code = m.code;
           reject(err);
           ws.close();
         } else this.onMessage(m);
@@ -70,6 +71,7 @@ export class Network {
           settled = true;
           const err = new Error("Chưa kết nối được máy chủ.");
           err.serverUnreachable = true;
+          err.cancelled = generation !== this.generation;
           reject(err);
         }
         if (generation !== this.generation) return;
@@ -82,11 +84,17 @@ export class Network {
   }
   reconnect() {
     clearTimeout(this.retry);
-    if (this.stopped) return;
-    this.retry = setTimeout(
-      () => this.connect(this.name, this.action, this.roomId).catch(() => this.reconnect()),
-      2500,
-    );
+    if (this.stopped || !this.sessionToken) return;
+    this.retry = setTimeout(() => {
+      this.connect("", "resume", null, this.sessionToken).catch(error => {
+        if (this.stopped || error.cancelled) return;
+        if (error.code === "sessionExpired") {
+          this.onMessage({ type: "disbanded", message: error.message });
+        } else {
+          this.reconnect();
+        }
+      });
+    }, 2500);
   }
   send(m) {
     if (this.ready && this.socket?.readyState === WebSocket.OPEN) {
@@ -95,8 +103,10 @@ export class Network {
     }
     return false;
   }
-  disconnect() {
+  disconnect({ leave = false } = {}) {
+    if (leave) this.send({ type: "leave" });
     this.stopped = true;
+    this.sessionToken = null;
     clearTimeout(this.retry);
     this.generation++;
     this.ready = false;

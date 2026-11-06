@@ -12,7 +12,7 @@ function resolveRoute(req) {
 
 // Export an HTTP server, rather than a request-only function, so Vercel can
 // forward WebSocket upgrades to the same game core as the HTTP endpoints.
-export async function createFunctionServer() {
+export async function createFunctionServer({ reconnectGraceMs } = {}) {
   let game;
   const server = http.createServer((req, res) => {
     resolveRoute(req);
@@ -22,7 +22,7 @@ export async function createFunctionServer() {
     });
   });
   server.on('upgrade', resolveRoute);
-  game = await attachGameCore({ server, persistent: false });
+  game = await attachGameCore({ server, persistent: false, reconnectGraceMs });
   return {
     server,
     async close() {
