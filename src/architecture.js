@@ -36,6 +36,23 @@ function ovalTableGeometry() {
   g.translate(0, -0.5, 0);
   return g;
 }
+function presidentChairBackGeometry() {
+  const shape = new THREE.Shape();
+  shape.moveTo(-0.43, -0.50);
+  shape.lineTo(0.43, -0.50);
+  shape.quadraticCurveTo(0.45, -0.05, 0.48, 0.19);
+  shape.bezierCurveTo(0.50, 0.34, 0.30, 0.39, 0.19, 0.46);
+  shape.quadraticCurveTo(0, 0.54, -0.19, 0.46);
+  shape.bezierCurveTo(-0.30, 0.39, -0.50, 0.34, -0.48, 0.19);
+  shape.quadraticCurveTo(-0.45, -0.05, -0.43, -0.50);
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: 0.82, bevelEnabled: true, bevelSize: 0.02,
+    bevelThickness: 0.09, bevelSegments: 3,
+  });
+  geometry.translate(0, 0, -0.41);
+  geometry.computeVertexNormals();
+  return geometry;
+}
 function nationalEmblemCanvas() {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = 512;
@@ -805,6 +822,7 @@ export class ArchitectureRenderer {
       cylinder: new THREE.CylinderGeometry(0.5, 0.5, 1, 12),
       roof: roofGeometry(),
       ovalTable: ovalTableGeometry(),
+      presidentChairBack: presidentChairBackGeometry(),
       pediment: roofGeometry(true),
       ...heritageGeometries(),
     };
@@ -873,6 +891,7 @@ export class ArchitectureRenderer {
         );
         mesh.position.fromArray(l.position);
         mesh.rotation.y = l.rotationY;
+        mesh.userData.fallbackFor = l.fallbackFor;
         if (l.rotationX != null) mesh.rotation.x = l.rotationX;
         else if (l.kind === "helipad") mesh.rotation.x = -Math.PI / 2;
         group.add(mesh);
@@ -1089,6 +1108,11 @@ export class ArchitectureRenderer {
           Math.hypot(p.x - x, p.z - z) > display.loadDistance) continue;
       display.requested = true;
       addModelInstances(display.parent, MODEL_URLS[display.model], [display.placement])
+        .then(() => {
+          for (const child of display.parent.children) {
+            if (child.userData.fallbackFor === display.model) child.visible = false;
+          }
+        })
         .catch(error => {
           display.requested = false;
           display.failures = (display.failures || 0) + 1;

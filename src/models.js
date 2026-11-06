@@ -31,7 +31,9 @@ export const MODEL_URLS = {
   restingPresident: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('thi hài bác.glb')}`,
   honorGuard: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('canh gác.glb')}`,
   banquetPainting: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('tranh phòng đại yến.glb')}?v=2`,
-  tank: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('xe tăng.glb')}?v=2`,
+  credentialsPainting: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('ảnh trình quốc thư.glb')}`,
+  helicopter: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('máy bay.glb')}`,
+  tank: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('xe tăng.glb')}?v=3`,
 };
 
 // Bake scan transforms and put the bottom at zero, centered horizontally.

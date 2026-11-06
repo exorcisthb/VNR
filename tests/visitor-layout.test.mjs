@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BUILDINGS, ROOMS } from '../shared/architecture.mjs';
-import { collides, stepPlayer, isJumpRestricted } from '../shared/physics.mjs';
+import { BUILDINGS, ROOMS, findRoom } from '../shared/architecture.mjs';
+import { collides, stepPlayer, isJumpRestricted, movementPathClear } from '../shared/physics.mjs';
 const emptyWorld = { get: () => 0 };
 
 test('museum blocks jump input while outdoor visitors can still jump', () => {
@@ -28,7 +28,7 @@ test('red runner covers the mausoleum stairs continuously from landing to plaza'
 });
 
 test('stairwell guards block all exposed sides while keeping upper landings accessible', () => {
-  for (const [id, stairX, levels] of [['palace', -25, [10, 16]], ['government', -24, [9, 14]]]) {
+  for (const [id, stairX, levels] of [['palace', -25, [10, 16, 22]], ['government', -24, [9, 14]]]) {
     const building = BUILDINGS.find(b => b.id === id);
     for (const level of levels) {
       const position = (dx, z, yOffset = 0.025) => ({ x: building.x + stairX + dx, y: level + yOffset, z: building.z + z * building.front });
@@ -42,6 +42,28 @@ test('stairwell guards block all exposed sides while keeping upper landings acce
       assert.equal(collides(emptyWorld, position(0, -4.8)), false, `${id} ${level}: blocked landing`);
     }
   }
+});
+
+test('visitors can climb from the banquet floor to the helipad and return', () => {
+  const palace = BUILDINGS.find(b => b.id === 'palace');
+  const helipad = ROOMS.find(r => r.id === 'helipad');
+  const player = { x: palace.x - 25, y: 16.025, z: palace.z + 8.8, yaw: 0, vy: 0, grounded: true };
+  const walk = (axis, target, floor) => {
+    const direction = Math.sign(target - player[axis]);
+    for (let i = 0; i < 1500 && Math.abs(player[axis] - target) > 0.043; i++) {
+      const from = { ...player };
+      stepPlayer(emptyWorld, player, { x: axis === 'x' ? direction : 0, z: axis === 'z' ? direction : 0 }, 1 / 120);
+      assert.ok(movementPathClear(emptyWorld, from, player), 'server rejected a walking step');
+    }
+    assert.ok(Math.abs(player[axis] - target) <= 0.043, 'route is blocked');
+    assert.ok(Math.abs(player.y - floor) < 0.04, 'player did not reach the expected floor');
+  };
+  walk('z', helipad.spawn.z, 22);
+  walk('x', helipad.spawn.x, 22);
+  assert.equal(findRoom(player)?.id, helipad.id);
+  assert.equal(collides(emptyWorld, helipad.spawn), false);
+  walk('x', palace.x - 25, 22);
+  walk('z', palace.z + 8.8, 16);
 });
 
 test('new museum room spawns are inside their rooms and clear of furniture', () => {

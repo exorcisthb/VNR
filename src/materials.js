@@ -19,6 +19,7 @@ export function surfaceTexture(kind) {
       ceiling: "#806246",
       darkwood: "#44392f",
       carpet: "#8b2e31",
+      presidentBrocade: "#ae392b",
       terracotta: "#805342",
       pavers: "#b9b5a7",
     }[kind] || "#ddd6c5";
@@ -41,6 +42,21 @@ export function surfaceTexture(kind) {
     }
     g.fillStyle = "#261c1830";
     for (const x of [0, 64, 128, 192]) g.fillRect(x, 0, 1, 256);
+  } else if (kind === "presidentBrocade") {
+    for (let y = 0; y < 256; y += 3) {
+      g.fillStyle = y % 2 ? "#ffb88f20" : "#471b1a22";
+      g.fillRect(0, y, 256, 1);
+    }
+    for (let y = 8; y < 256; y += 16) {
+      for (let x = y % 32; x < 256; x += 16) {
+        g.fillStyle = "#e7ac6c53";
+        g.beginPath();
+        g.moveTo(x, y - 4);
+        g.quadraticCurveTo(x + 6, y, x, y + 4);
+        g.quadraticCurveTo(x - 6, y, x, y - 4);
+        g.fill();
+      }
+    }
   } else if (kind === "carpet") {
     for (let y = 0; y < 256; y += 3) {
       g.fillStyle = y % 2 ? "#ffffff0c" : "#0000000e";
@@ -131,6 +147,10 @@ export function makeMaterials() {
     screen: ["#20353b", 0.3],
   };
   const materials = {};
+  materials.presidentBrocade = new THREE.MeshStandardMaterial({
+    map: surfaceTexture("presidentBrocade"),
+    roughness: 0.9,
+  });
   for (const kind of [
     "marble",
     "stone",

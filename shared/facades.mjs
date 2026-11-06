@@ -200,8 +200,12 @@ export function palaceExterior(b, floor) {
   const add = (...args) => b.add(...args);
   const cream = 'palaceConcrete', trim = 'palaceTrim', glass = 'palaceGlass';
   // Continuous roof cornice, shadow gap and the narrow clerestory beneath it.
-  add(0, 21.8, 0, 63.6, 0.22, 30.8, trim, false);
-  add(0, 22.02, 0, 64.2, 0.18, 31.2, cream, false);
+  for (const side of [-1, 1]) {
+    add(0, 21.8, side * 15.12, 63.6, 0.22, 0.56, trim, false);
+    add(side * 31.54, 21.8, 0, 0.52, 0.22, 30, trim, false);
+    add(0, 22.02, side * 15.27, 64.2, 0.18, 0.66, cream, false);
+    add(side * 31.70, 22.02, 0, 0.80, 0.18, 30, cream, false);
+  }
   add(0, 21.43, 15.15, 62.8, 0.22, 0.65, 'palaceMetal', false);
   add(0, 20.6, 14.35, 61.5, 0.8, 0.12, glass, false);
   for (let x = -30; x <= 30; x += 1.5)
@@ -279,10 +283,17 @@ export function palaceExterior(b, floor) {
   add(0, 9.55, 17.7, 14.1, 0.12, 6.9, cream, false);
   // Terrace balustrade, roof lights and small potted palms in silhouette.
   for (const side of [-1, 1]) {
-    add(side * 22, 22.25, 13.5, 17, 0.18, 0.2, trim, false);
-    for (let x = 14; x <= 30; x += 2)
-      add(side * x, 22.1, 13.5, 0.07, 0.85, 0.07, 'palaceMetal', false);
-    add(side * 22, 22.95, 13.5, 17, 0.09, 0.16, trim, false);
+    for (const [x, z, w, d] of [[0, side * 14.75, 62.6, 0.26], [side * 31.25, 0, 0.26, 29.5]]) {
+      add(x, 22, z, w, 0.28, d, cream, false);
+      add(x, 23.02, z, w, 0.12, d, trim, false);
+      const posts = Math.ceil(Math.max(w, d) / 1.15);
+      for (let i = 0; i <= posts; i++) {
+        const t = i / posts - 0.5;
+        add(x + (w > d ? w * t : 0), 22.28, z + (d > w ? d * t : 0),
+          0.075, 0.74, 0.075, 'palaceMetal', false);
+      }
+      add(x, 22, z, w, 3.1, d, cream, true, 'collision');
+    }
     for (const x of [15, 20, 25, 29]) {
       add(side * x, 22.05, 9, 0.65, 0.45, 0.65, 'palaceStone', false);
       add(side * x, 22.5, 9, 0.11, 1.5, 0.11, 'wood', false, 'cylinder');

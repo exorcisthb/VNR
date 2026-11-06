@@ -165,6 +165,20 @@ function chair(b, x, y, z, rotation = 0, mat = "upholstery") {
     for (const dz of [-0.19, 0.19]) add(dx, 0, dz, 0.05, 0.38, 0.05, "wood");
   for (const dx of [-0.25, 0.25]) add(dx, 0.52, 0, 0.05, 0.05, 0.40, "wood");
 }
+function presidentChair(b, x, y, z) {
+  for (const dx of [-0.28, 0.28]) {
+    for (const dz of [-0.25, 0.25]) {
+      const leg = b.add(x + dx, y, z + dz, 0.08, 0.46, 0.08, "darkwood", false);
+      leg.rotationZ = dx > 0 ? 0.09 : -0.09;
+    }
+  }
+  b.add(x, y + 0.40, z, 0.74, 0.13, 0.64, "darkwood");
+  b.add(x, y + 0.49, z + 0.02, 0.71, 0.14, 0.62, "presidentBrocade", false, "sphere");
+  b.add(x, y + 0.47, z - 0.28, 0.76, 1.27, 0.12, "darkwood", true, "presidentChairBack");
+  b.add(x, y + 0.53, z - 0.22, 0.62, 1.00, 0.13, "presidentBrocade", false, "presidentChairBack");
+  for (const [dx, height] of [[0, 1.65], [-0.12, 1.61], [0.12, 1.61], [-0.22, 1.53], [0.22, 1.53]])
+    b.add(x + dx, y + height, z - 0.215, 0.11, 0.07, 0.045, "walnut", false, "sphere");
+}
 function table(b, x, y, z, w, d, mat = "walnut") {
   b.add(x, y + 0.68, z, w, 0.08, d, mat);
   const legX = Math.max(0.08, w / 2 - 0.12);
@@ -265,18 +279,18 @@ function stairFlight(b, x, base, startZ, rise = 6, mat = "marble", railMat = "wo
     );
   }
 }
-function upperSlab(b, y, width, depth, stairX, isTopFloor = false) {
+function upperSlab(b, y, width, depth, stairX, { isTopFloor = false, thickness = 0.26, mat = "marble" } = {}) {
   const x0 = -width / 2,
     x1 = width / 2,
     a = stairX - 1.9,
     c = stairX + 1.9;
-  b.add((x0 + a) / 2, y, 0, a - x0, 0.26, depth, "marble");
-  b.add((c + x1) / 2, y, 0, x1 - c, 0.26, depth, "marble");
-  b.add(stairX, y, (-depth / 2 - 4) / 2, 3.8, 0.26, depth / 2 - 4, "marble");
-  b.add(stairX, y, (8 + depth / 2) / 2, 3.8, 0.26, depth / 2 - 8, "marble");
+  b.add((x0 + a) / 2, y, 0, a - x0, thickness, depth, mat);
+  b.add((c + x1) / 2, y, 0, x1 - c, thickness, depth, mat);
+  b.add(stairX, y, (-depth / 2 - 4) / 2, 3.8, thickness, depth / 2 - 4, mat);
+  b.add(stairX, y, (8 + depth / 2) / 2, 3.8, thickness, depth / 2 - 8, mat);
 
   // Guard every exposed edge; leave a central opening at the stair's upper landing.
-  const deck = y + 0.26;
+  const deck = y + thickness;
   const rail = (cx, cz, w, d) => {
     b.add(cx, deck + 1.12, cz, w, 0.09, d, "wood", false);
     b.add(cx, deck + 0.12, cz, w, 0.05, d, "bronze", false);
@@ -296,12 +310,6 @@ function upperSlab(b, y, width, depth, stairX, isTopFloor = false) {
   if (isTopFloor) {
     rail(stairX, 8, 3.8, 0.09);
   }
-}
-function ceiling(b, y, w, d) {
-  b.add(0, y, 0, w, 0.22, d, "ivory");
-  for (let x = -w / 2 + 2; x < w / 2; x += 4)
-    for (let z = -d / 2 + 2; z < d / 2; z += 4)
-      b.add(x, y - 0.045, z, 1.4, 0.04, 0.4, "lamp", false);
 }
 function makeMausoleum(l) {
   const b = makeBuilding(l),
@@ -458,7 +466,7 @@ function makePalace(l) {
   b.steps(0, 19.5, 14, 1, 5, 0.5);
   for (let floor = 0; floor < 3; floor++) {
     const y = f + floor * 6;
-    if (floor) upperSlab(b, y - 0.26, 60, 28, -25, floor === 2);
+    if (floor) upperSlab(b, y - 0.26, 60, 28, -25);
     b.add(0, y, -14, 60, 5.7, 0.32, "ivory");
     for (const x of [-30, 30]) {
       b.add(x, y, 0, 0.32, 0.6, 28, "ivory");
@@ -474,18 +482,29 @@ function makePalace(l) {
         b.add(x, y + 0.6, z, 2.72, 4.7, 0.055, "window");
         b.add(x - 1.45, y, z, 0.12, 5.7, 0.18, "ivory");
       }
-    if (floor === 2) b.add(0, y + 5.7, 0, 63, 0.3, 30, "ivory");
-    else {
+    if (floor < 2) {
       for (const z of [-14.7, 14.7])
         b.add(0, y + 5.7, z, 63, 0.3, 0.6, "ivory");
       for (const x of [-31.2, 31.2])
         b.add(x, y + 5.7, 0, 0.6, 0.3, 29, "ivory");
     }
-    if (floor < 2) stairFlight(b, -25, y, 8, 6, "darkwood", "darkwood");
+    stairFlight(b, -25, y, 8, 6, "darkwood", "darkwood");
     for (const x of [-17, -8, 8, 17])
       b.add(x, y, 13.3, 0.42, 5.7, 0.42, "ivory");
   }
   palaceExterior(b, f);
+  b.modelDisplays = [
+    {
+      model: "credentialsPainting",
+      loadDistance: 32,
+      placement: { position: [l.x, 10.24, l.z - 13.47 * l.front], width: 8.6 },
+    },
+    {
+      model: "helicopter",
+      loadDistance: 80,
+      placement: { position: [l.x + 22.5, 22.02, l.z], width: 11.6 },
+    },
+  ];
   // Sảnh chính và thảm tròn Rồng thời Nguyễn (mô hình 3D thực tế thamr.glb)
   // Vòng rào chắn cọc đồng dây nhung đỏ bảo vệ thảm
   for (let i = 0; i < 16; i++) {
@@ -643,12 +662,14 @@ function makePalace(l) {
   b.label(
     "BÌNH NGÔ ĐẠI CÁO · Nguyễn Văn Minh (1966)",
     0,
-    13.3,
+    12.59,
     -13.77,
-    15.6,
-    4.2,
+    8.6,
+    4.7,
     "lacquer",
   );
+  b.labels.at(-1).fallbackFor = "credentialsPainting";
+  b.add(0, 10.24, -13.47, 8.6, 4.7, 0.67, "ivory", true, "collision");
 
   // Bàn và ghế chủ tọa sơn mài thếp vàng của Tổng thống trước bức tranh Bình Ngô Đại Cáo (ảnh thực tế)
   table(b, 0, 10, -10.5, 3.4, 1.5, "walnut");
@@ -659,12 +680,6 @@ function makePalace(l) {
   table(b, 0, 10, -7.5, 2.2, 0.9, "walnut");
   chair(b, -1.8, 10, -7.5, -Math.PI / 2, "brocade");
   chair(b, 1.8, 10, -7.5, Math.PI / 2, "brocade");
-
-  // Đôi lộc bình vàng hoàng gia chầu hai bên bức tranh sơn mài
-  for (const side of [-1, 1]) {
-    b.add(side * 8.6, 10, -13.2, 0.55, 1.8, 0.55, "bronze", false, "cylinder");
-    b.add(side * 8.6, 11.8, -13.2, 0.4, 0.55, 0.4, "bronze", false, "sphere");
-  }
 
   // Rèm lụa vàng buông rủ hai bên cửa sổ lớn
   for (const z of [-10, -5, 0])
@@ -680,8 +695,7 @@ function makePalace(l) {
   table(b, 24, 10, -5.5, 4.4, 1.75, "walnut");
   b.add(24, 10.1, -4.68, 4.1, 0.55, 0.12, "woodpanel", false);
   b.add(24, 10.78, -5.5, 2.2, 0.025, 1.0, "leather", false);
-  chair(b, 24, 10, -6.9, Math.PI, "curtainRed");
-  b.add(24, 10.95, -7.12, 0.8, 0.6, 0.14, "curtainRed", false);
+  presidentChair(b, 24, 10, -6.9);
   for (let i = 0; i < 3; i++) {
     const px = 25.0 + i * 0.36;
     const mat = i === 0 ? "curtainRed" : "ivory";
@@ -766,7 +780,11 @@ function makePalace(l) {
     b.chandelier(0, 21.55, z, 2.25, 1.45);
     b.light(0, 20.6, z, "#fff4da", 28);
   }
-  ceiling(b, 21.7, 60, 28);
+  upperSlab(b, 21.7, 63, 30, -25, { isTopFloor: true, thickness: 0.3, mat: "ivory" });
+  for (let x = -28; x < 30; x += 4)
+    for (let z = -12; z < 14; z += 4)
+      if (x > -23.1 || z < -4 || z > 8)
+        b.add(x, 21.655, z, 1.4, 0.04, 0.4, "lamp", false);
   b.add(0, 22, 0, 26, 0.3, 14, "ivory");
   b.add(0, 22.3, -6.6, 25, 3.2, 0.3, "ivory");
   for (const x of [-12.5, 12.5]) b.add(x, 22.3, 0, 0.3, 3.2, 13, "ivory");
@@ -776,7 +794,18 @@ function makePalace(l) {
   b.add(0, 25.85, 0, 0.2, 8, 0.2, "bronze", false, "cylinder");
   b.add(0, 33.85, 0, 0.45, 0.45, 0.45, "bronze", false, "sphere");
   b.label("palace-roof-flag", 2.3, 32.1, 0, 4.4, 2.9, "national-flag");
-  b.label("helipad", 21, 22.1, 0, 10, 10, "helipad");
+  b.label("helipad", 22.5, 22.015, 0, 12.5, 12.5, "helipad");
+  b.add(21.65, 22, 0, 4.6, 2.2, 2.2, "granite", true, "collision");
+  b.add(26.1, 22.9, 0, 4.6, 1.6, 0.95, "granite", true, "collision");
+  b.label("↑ LÊN KHU ĐỖ MÁY BAY", -22.25, 18.25, 7.75, 3.55, 0.53);
+  b.label("KHU ĐỖ MÁY BAY · CÁNH ĐÔNG", -12.5, 23.5, -7.0, 5.5, 0.58);
+  b.add(-12.5, 22, -7.0, 0.12, 1.23, 0.12, "palaceMetal", false);
+  b.label("KHU ĐỖ MÁY BAY", 22.5, 23.43, -6.7, 5.0, 0.72);
+  for (const x of [20.4, 24.6])
+    b.add(x, 22, -6.7, 0.12, 1.08, 0.12, "palaceMetal", false);
+  b.room("helipad", "Khu đỗ máy bay", 14.5, -13.5, 30.5, 13.5, 22,
+    "Sân thượng Dinh Độc Lập có khu đỗ máy bay và mô hình trực thăng trưng bày. Lối lên nằm ở cầu thang cánh tây, cạnh Phòng Đại yến.", PALACE_SOURCE);
+  b.rooms.at(-1).spawn = { x: l.x + 22.5, y: 22.025, z: l.z - 9.4 * l.front, yaw: Math.PI };
   b.room(
     "reception",
     "Phòng Khánh tiết",
@@ -808,8 +837,8 @@ function makePalace(l) {
     17,
     11,
     10,
-    "Phòng tiếp nhận quốc thư được gợi lại bằng dãy ghế tiếp khách, thảm và mảng trang trí sơn mài tự tạo; không sao chép nguyên tác mỹ thuật.",
-    "https://dsvh.gov.vn/di-tich-lich-su-dinh-doc-lap-2937",
+    "Phòng tiếp nhận quốc thư được tái hiện với dãy ghế tiếp khách, thảm vàng và mô hình tranh sơn mài Bình Ngô Đại Cáo.",
+    PALACE_SOURCE,
   );
   b.room(
     "banquet",
@@ -833,7 +862,7 @@ function makeGovernment(l) {
   governmentExterior(b, f);
   for (let floor = 0; floor < 3; floor++) {
     const y = f + floor * 5;
-    if (floor) upperSlab(b, y - 0.26, 56, 28, -24, floor === 2);
+    if (floor) upperSlab(b, y - 0.26, 56, 28, -24, { isTopFloor: floor === 2 });
     b.add(0, y, -14, 56, 4.7, 0.35, "ochre");
     for (const x of [-28, 28]) b.add(x, y, 0, 0.35, 4.7, 28, "ochre");
     for (const side of [-1, 1])

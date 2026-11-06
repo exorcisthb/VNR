@@ -8,7 +8,7 @@ export const RADIUS = 0.29,
 // Stair bounds are used for floor support; rail collisions keep players on the stairs.
 export const STAIR_ZONES = [
   // Cầu thang Dinh Độc Lập (palace: x=60, stairX=-25 => x=35)
-  { xMin: 33.7, xMax: 36.3, zMin: -52.5, zMax: -39.5, yMin: 3.8, yMax: 16.5, centerX: 35 },
+  { xMin: 33.7, xMax: 36.3, zMin: -52.5, zMax: -39.5, yMin: 3.8, yMax: 22.5, centerX: 35 },
   // Cầu thang Trụ sở Chính phủ (government: x=0, stairX=-24 => x=-24)
   { xMin: -25.3, xMax: -22.7, zMin: 69.5, zMax: 82.5, yMin: 3.8, yMax: 14.5, centerX: -24 },
   // Cầu thang Chùa Một Cột (pagoda: x=-87)
