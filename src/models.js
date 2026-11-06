@@ -32,7 +32,7 @@ export const MODEL_URLS = {
   honorGuard: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('canh gác.glb')}`,
   banquetPainting: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('tranh phòng đại yến.glb')}?v=2`,
   credentialsPainting: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('ảnh trình quốc thư.glb')}`,
-  helicopter: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('máy bay.glb')}`,
+  helicopter: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('máy bay.glb')}?v=2`,
   tank: `${import.meta.env?.BASE_URL ?? '/'}models/${encodeURIComponent('xe tăng.glb')}?v=3`,
 };
 

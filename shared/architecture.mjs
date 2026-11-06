@@ -497,7 +497,7 @@ function makePalace(l) {
     {
       model: "credentialsPainting",
       loadDistance: 32,
-      placement: { position: [l.x, 10.24, l.z - 13.47 * l.front], width: 8.6 },
+      placement: { position: [l.x, 10.78, l.z - 13.47 * l.front], width: 8.6 },
     },
     {
       model: "helicopter",
@@ -662,14 +662,20 @@ function makePalace(l) {
   b.label(
     "BÌNH NGÔ ĐẠI CÁO · Nguyễn Văn Minh (1966)",
     0,
-    12.59,
+    13.13,
     -13.77,
     8.6,
     4.7,
     "lacquer",
   );
   b.labels.at(-1).fallbackFor = "credentialsPainting";
-  b.add(0, 10.24, -13.47, 8.6, 4.7, 0.67, "ivory", true, "collision");
+  b.add(0, 10.78, -13.47, 8.6, 4.7, 0.67, "ivory", true, "collision");
+  // Kệ gỗ sát tường đỡ chân hai bình và bức tranh.
+  b.add(0, 10.67, -13.35, 9.25, 0.11, 0.97, "walnut");
+  b.add(0, 10.50, -13.35, 9.02, 0.17, 0.86, "darkwood");
+  b.add(0, 10.17, -13.35, 9.02, 0.09, 0.86, "walnut");
+  for (const x of [-4.41, -1.47, 1.47, 4.41])
+    b.add(x, 10, -13.35, 0.18, 0.5, 0.86, "darkwood");
 
   // Bàn và ghế chủ tọa sơn mài thếp vàng của Tổng thống trước bức tranh Bình Ngô Đại Cáo (ảnh thực tế)
   table(b, 0, 10, -10.5, 3.4, 1.5, "walnut");
@@ -705,8 +711,10 @@ function makePalace(l) {
   }
   for (let x = 19.5; x < 29; x += 0.3)
     b.add(x, 10, -13.55, 0.17, 1.4, 0.1, "woodpanel", false);
-  b.add(24, 11.6, -13.55, 8.8, 3.4, 0.12, "walnut", false);
-  b.label("Phong cảnh sau bàn làm việc", 24, 13.25, -13.46, 8.4, 3.0, "landscape");
+  b.add(24, 11.48, -13.59, 8.8, 3.54, 0.13, "darkwood", false);
+  b.add(24, 11.53, -13.52, 8.7, 3.44, 0.10, "walnut", false);
+  b.add(24, 11.61, -13.46, 8.4, 3.28, 0.025, "lightwood", false);
+  b.label("Phong cảnh ven biển", 24, 13.25, -13.44, 8.32, 3.2, "presidentLandscape");
   for (const x of [21.5, 26.5]) {
     sofa(b, x, 10, 4, x < 24 ? -Math.PI / 2 : Math.PI / 2, "curtainRed");
     table(b, x < 24 ? 22.9 : 25.1, 10, 4, 0.9, 2.6, "walnut");
@@ -798,8 +806,10 @@ function makePalace(l) {
   b.add(21.65, 22, 0, 4.6, 2.2, 2.2, "granite", true, "collision");
   b.add(26.1, 22.9, 0, 4.6, 1.6, 0.95, "granite", true, "collision");
   b.label("↑ LÊN KHU ĐỖ MÁY BAY", -22.25, 18.25, 7.75, 3.55, 0.53);
-  b.label("KHU ĐỖ MÁY BAY · CÁNH ĐÔNG", -12.5, 23.5, -7.0, 5.5, 0.58);
-  b.add(-12.5, 22, -7.0, 0.12, 1.23, 0.12, "palaceMetal", false);
+  b.label("KHU ĐỖ MÁY BAY · CÁNH ĐÔNG", -17.2, 23.5, -7.5, 5.5, 0.58);
+  b.add(-17.2, 23.21, -7.5, 5.5, 0.58, 0.018, "palaceMetal", false);
+  for (const x of [-19.45, -14.95])
+    b.add(x, 22, -7.5, 0.12, 1.24, 0.12, "palaceMetal", false);
   b.label("KHU ĐỖ MÁY BAY", 22.5, 23.43, -6.7, 5.0, 0.72);
   for (const x of [20.4, 24.6])
     b.add(x, 22, -6.7, 0.12, 1.08, 0.12, "palaceMetal", false);

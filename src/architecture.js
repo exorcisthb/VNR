@@ -4,11 +4,13 @@ import { BUILDINGS } from "../shared/architecture.mjs";
 import { makeMaterials, flagCanvas } from "./materials.js";
 import { heritageMaterials, heritageGeometries } from "./heritage.js";
 import partyFlagUrl from "./assets/party-flag.jpg";
+import presidentLandscapeUrl from "./assets/president-landscape.svg";
 import museumExhibitionUrl from "./assets/museum-exhibition.jpg?inline";
 import museumJourneyUrl from "./assets/museum-journey.jpg?inline";
 import { retryAsset } from "./asset-loading.js";
 
 let partyFlagTexture;
+let presidentLandscapeTexture;
 const museumPhotoTextures = new Map();
 function roofGeometry(pediment = false) {
   const s = new THREE.Shape();
@@ -169,6 +171,14 @@ function nationalEmblemCanvas() {
 }
 
 function labelTexture(label) {
+  if (label.kind === "presidentLandscape") {
+    if (!presidentLandscapeTexture) {
+      presidentLandscapeTexture = new THREE.TextureLoader().load(presidentLandscapeUrl);
+      presidentLandscapeTexture.colorSpace = THREE.SRGBColorSpace;
+      presidentLandscapeTexture.anisotropy = 4;
+    }
+    return presidentLandscapeTexture;
+  }
   if (label.kind === "museum-photo") {
     if (!museumPhotoTextures.has(label.image)) {
       const placeholder = document.createElement('canvas');

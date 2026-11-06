@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="500" viewBox="0 0 1300 500">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop stop-color="#87a5b5"/>
+      <stop offset=".6" stop-color="#b0bac0"/>
+      <stop offset="1" stop-color="#e4c8ad"/>
+    </linearGradient>
+    <linearGradient id="sea" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop stop-color="#6698aa"/>
+      <stop offset=".55" stop-color="#79adbd"/>
+      <stop offset="1" stop-color="#8db9be"/>
+    </linearGradient>
+    <linearGradient id="road" x2="1" y2="0">
+      <stop stop-color="#c5cec0"/>
+      <stop offset=".75" stop-color="#e5d3b2"/>
+      <stop offset="1" stop-color="#baa083"/>
+    </linearGradient>
+    <pattern id="ripples" width="270" height="72" patternUnits="userSpaceOnUse">
+      <path d="M9 8q13 -2 32 0m63 8 20 -1m51 -5q16 2 34 1m32 13 16 1M41 33q23 -4 50 0m62 11 26 -2m50 16 29 -1M3 60l25 -2m39 9 14 -1m40 -11 19 0" fill="none" stroke="#dbe2d1" stroke-width="2.3" stroke-linecap="round" opacity=".44"/>
+      <path d="M49 14l24 -2m144 22 18 0M17 43l21 1m60 6 14 -1m78 15 28 -2" fill="none" stroke="#507f94" stroke-width="1.7" opacity=".5"/>
+    </pattern>
+    <filter id="paint" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".095" numOctaves="3" seed="12" result="grain"/>
+      <feDisplacementMap in="SourceGraphic" in2="grain" scale="5" xChannelSelector="R" yChannelSelector="G" result="brush"/>
+      <feColorMatrix in="grain" type="matrix" values="0 0 0 0 .40  0 0 0 0 .32  0 0 0 0 .22  .25 .25 .25 0 -.31" result="pigment"/>
+      <feBlend in="brush" in2="pigment" mode="multiply"/>
+    </filter>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h1300v300H0z"/>
+  <path fill="url(#sea)" d="M0 300h1300v200H0z"/>
+  <g filter="url(#paint)">
+    <path fill="url(#sky)" d="M0 0h1300v330H0z"/>
+    <g fill="#dec7b5">
+      <path d="M-20 174q44-27 93-18 7-22 38-24 27-22 75-11 8-38 50-48 34-14 58 9 20-24 49-14 21-14 49-5 26-34 59-26 25 8 18 29 32-3 44 31 43-5 60 19 52-15 87 7 29 2 56 26 48-1 74 31l43 31-853 7z"/>
+      <path d="M588 106q46-17 77-5 21-40 71-40 36-23 56-6 29-26 58-17 32-10 57 16 32-7 45 19 44-7 76 34 59-8 96 22 35-9 59 22 73-10 117 18v114H509z"/>
+    </g>
+    <g fill="#efe0c8" opacity=".49">
+      <path d="M47 176q66-27 109-18 17-26 56-19 24-37 60-34l-8 20 34 2-21 19 49 7-74 12-9 14z"/>
+      <path d="M319 115q59-16 67-38 36-39 70-30l-22 19 16 13-35 13 16 21-55-3-20 20z"/>
+      <path d="M626 130q50-24 73-22 19-31 60-29 42-42 83-28l-19 17 20 10-43 13 16 14-65 6-25 17z"/>
+      <path d="M900 100q43-14 71 10 57-8 90 18 52-4 83 29l-101-12-42 7-25-25z"/>
+    </g>
+    <path fill="#819aa4" d="M0 260l71-25 54 1 63-13 65 8 62-1 75 16 70-3 83 20 113-1 66 17 63 4v44H0z"/>
+    <path fill="#697f82" opacity=".62" d="M0 279l100-16 59 11 86-16 102 3 92-7 111 16 91 19 110 1v26H0z"/>
+    <path fill="url(#sea)" d="M0 292h1300v208H0z"/>
+    <path fill="url(#ripples)" d="M0 300h1300v200H0z"/>
+    <path fill="#8b9780" d="M653 293l96-15 56-32 30-7 43-26 28-5 35-29 26 3 24-30 18 2 22 40 32 20 25 9 49 27 49-12 48 5 66-26v79z"/>
+    <path fill="#586e65" d="M741 289l69-38 39-4 38-28 30-9 22-26 19 8 28-23 11-15 14 4 14 33 33 21 22 18-46-14-16 19-28-3-26 17-37-6-52 25-28-3-42 20z"/>
+    <path fill="#304f4a" d="M774 286l43-16 21-20 15 8 36-33 17 4 32-37 12 10 24-7 11-15 6 22-27 14-16 16-29-2-26 25-31-3-34 22z"/>
+    <path fill="#b4ad87" d="M947 238l31-26 16-6 6-45 13 8 13 36 22 10-12 11-24-10-30 34-41 15-24 16-29 4zM1071 245l22-8 52 20 36-11 43 10 48-19 28-4v55l-68-8-59 4-35-9-30-3z"/>
+    <path fill="#3c6053" d="M54 292q39-33 88 0zM373 291q39-14 73-11 27-11 71-8 36-15 82-8 45-11 89 6 53-14 88 4l-49 19zM1003 289q40-13 66-7 34-12 63-1l17 12z"/>
+    <g fill="#e6d2ab" stroke="#907f6c" stroke-width="2">
+      <path d="M819 278h24v13h-24zm8-8h14l8 8h-31zM933 278h28v15h-28zm5-8h14l12 8h-31zM963 285h25v8h-25zM732 283h15v10h-15zm-43 1h16v9h-16z"/>
+    </g>
+    <path fill="#7f7057" d="M0 342c150 0 202-28 345-35 75-4 137-13 185-22l10 4c-91 27-188 36-251 59-83 30 50 94 227 152H0z"/>
+    <path fill="url(#road)" d="M0 328c139 7 234-29 357-31 75-2 122-5 174-12l-2 5c-79 22-206 30-272 53-98 33 66 118 219 157H0z"/>
+    <path fill="none" stroke="#f0dfc2" stroke-width="7" opacity=".6" d="M0 365c87-3 143-22 195-28-72 32-44 92 63 163"/>
+    <path fill="none" stroke="#645648" stroke-width="3" d="M208 327q98-28 222-29l94-11"/>
+    <path fill="none" stroke="#c7b9a0" stroke-width="3" d="M209 327v-14m22 8v-14m21 10v-13m26 8v-12m28 7v-11m27 8v-11m28 8v-10m29 8v-9m32 6v-8m30 5v-7m29 4v-6"/>
+    <path fill="none" stroke="#587787" stroke-width="2.6" d="M674 326h9m97 25h10m85-31v-10m76 15v-13m135 22v-12m115-7v-9"/>
+  </g>
+</svg>
